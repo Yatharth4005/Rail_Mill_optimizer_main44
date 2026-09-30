@@ -1,0 +1,553 @@
+{% extends 'casting_plan/base.html' %}
+{% block page_title %}Rail Mill Master Data Tables{% endblock %}
+{% block content %}
+
+<style>
+  /* Table Scroll Container */
+  .master-table-wrapper {
+    width: 100% !important;
+    max-width: 100% !important;
+    overflow-x: auto !important;
+    overflow-y: auto !important;
+    max-height: 650px !important;
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-md);
+    position: relative !important;
+    background: var(--bg-card);
+    box-shadow: var(--shadow-sm);
+    display: block !important;
+  }
+
+  .master-table {
+    width: max-content !important;
+    min-width: 100% !important;
+    border-collapse: separate !important;
+    border-spacing: 0 !important;
+    font-size: 12.5px !important;
+    table-layout: auto !important;
+  }
+
+  /* Sticky First Column Styling (SL. NO.) */
+  .master-table .sticky-sl-no {
+    position: -webkit-sticky !important;
+    position: sticky !important;
+    left: 0px !important;
+    border-right: 1px solid var(--border-color) !important;
+    box-shadow: 2px 0 5px rgba(0, 0, 0, 0.2) !important;
+  }
+
+  .master-table th.sticky-sl-no {
+    top: 0px !important;
+    z-index: 40 !important;
+    background-color: var(--table-header-bg) !important;
+  }
+
+  .master-table td.sticky-sl-no {
+    z-index: 25 !important;
+    background-color: var(--bg-card) !important;
+  }
+
+  /* Ensure Row Hover preserves sticky background */
+  .master-table tr:hover td.sticky-sl-no {
+    background-color: var(--bg-card-sub) !important;
+  }
+
+  [data-theme="light"] td.sticky-sl-no {
+    background-color: #ffffff !important;
+  }
+  [data-theme="light"] th.sticky-sl-no {
+    background-color: #f1f5f9 !important;
+  }
+  [data-theme="light"] .master-table tr:hover td.sticky-sl-no {
+    background-color: #e2e8f0 !important;
+  }
+</style>
+
+<div class="panel" style="margin-bottom: 24px; padding: 22px 26px; background: var(--bg-card); border: 1px solid var(--border-color); border-radius: var(--radius-lg);">
+  <div style="font-size: 11px; letter-spacing: 1.5px; font-weight: 800; color: #3b82f6; text-transform: uppercase; margin-bottom: 4px;">
+    RAIL MILL DATABASE
+  </div>
+  <h1 style="font-size: 22px; font-weight: 800; color: var(--text-primary); margin: 0 0 6px 0; letter-spacing: -0.3px; line-height: 1.25;">
+    Rail Mill Master Data &amp; Calculation Rules
+  </h1>
+  <p style="font-size: 13px; color: var(--text-secondary); margin: 0 0 16px 0; line-height: 1.4;">
+    Master database extracted from <code>Rail Mill Length calculation.xlsx</code> covering bloom calculations, steel chemistry, standards, section-wise rules, saw tolerances, and materials.
+  </p>
+
+  <!-- Tab Switcher -->
+  <div style="display: flex; gap: 8px; align-items: center; flex-wrap: wrap;">
+    <a href="?tab=rm_calc" class="button {% if selected_tab != 'rm_calc' %}button-secondary{% endif %}" style="padding: 7px 14px; font-size: 12px; font-weight: 700; border-radius: 20px;">
+      Bloom &amp; Length Calc ({{ counts.rm_calc|default:rm_calc.count|default:0 }})
+    </a>
+    <a href="?tab=rm_chem" class="button {% if selected_tab != 'rm_chem' %}button-secondary{% endif %}" style="padding: 7px 14px; font-size: 12px; font-weight: 700; border-radius: 20px;">
+      Steel Chemistry ({{ counts.rm_chem|default:rm_chem.count|default:0 }})
+    </a>
+    <a href="?tab=rm_standards" class="button {% if selected_tab != 'rm_standards' %}button-secondary{% endif %}" style="padding: 7px 14px; font-size: 12px; font-weight: 700; border-radius: 20px;">
+      Section Standards ({{ counts.rm_standards|default:rm_standards.count|default:0 }})
+    </a>
+    <a href="?tab=rm_secwise" class="button {% if selected_tab != 'rm_secwise' %}button-secondary{% endif %}" style="padding: 7px 14px; font-size: 12px; font-weight: 700; border-radius: 20px;">
+      Section-Wise Matrix ({{ counts.rm_secwise|default:rm_secwise.count|default:0 }})
+    </a>
+    <a href="?tab=rm_saw_rm" class="button {% if selected_tab != 'rm_saw_rm' %}button-secondary{% endif %}" style="padding: 7px 14px; font-size: 12px; font-weight: 700; border-radius: 20px;">
+      Saw Tolerances &amp; RM Weights
+    </a>
+    <a href="?tab=rm_mat" class="button {% if selected_tab != 'rm_mat' %}button-secondary{% endif %}" style="padding: 7px 14px; font-size: 12px; font-weight: 700; border-radius: 20px;">
+      Planning Materials ({{ counts.rm_materials|default:rm_materials.count|default:0 }})
+    </a>
+    <a href="?tab=secwt" class="button {% if selected_tab != 'secwt' %}button-secondary{% endif %}" style="padding: 7px 14px; font-size: 12px; font-weight: 700; border-radius: 20px; opacity: 0.75;">
+      Legacy Weight Maps
+    </a>
+  </div>
+</div>
+
+<section class="panel" style="padding: 24px;">
+
+  <!-- Universal Search Bar -->
+  <div style="display: flex; align-items: center; justify-content: space-between; gap: 16px; margin-bottom: 20px; flex-wrap: wrap; background: var(--bg-card-sub); padding: 12px 18px; border-radius: var(--radius-md); border: 1px solid var(--border-color);">
+    <div style="position: relative; flex: 1; min-width: 280px; max-width: 600px;">
+      <svg style="position: absolute; left: 14px; top: 50%; transform: translateY(-50%); width: 16px; height: 16px; color: var(--text-muted); pointer-events: none;" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <circle cx="11" cy="11" r="8"></circle>
+        <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+      </svg>
+      <input 
+        type="text" 
+        id="masterTableSearch" 
+        placeholder="Search materials, sections, grades, bloom sizes, values..." 
+        class="input-field" 
+        style="padding-left: 40px; padding-right: 36px; height: 42px; font-size: 13px; border-radius: 8px; width: 100%;"
+        oninput="filterMasterTable()"
+      >
+      <button 
+        type="button" 
+        id="clearSearchBtn" 
+        onclick="clearMasterTableSearch()" 
+        style="display: none; position: absolute; right: 10px; top: 50%; transform: translateY(-50%); background: none; border: none; color: var(--text-muted); cursor: pointer; padding: 4px; border-radius: 50%; font-size: 14px; line-height: 1;"
+        title="Clear search"
+      >
+        ✕
+      </button>
+    </div>
+    
+    <div style="display: flex; align-items: center; gap: 12px;">
+      <span id="searchResultCount" class="status-badge success" style="font-size: 12px; padding: 6px 14px; border-radius: 20px; font-weight: 700; display: none;">
+        Matching: <span id="matchCount">0</span> rows
+      </span>
+    </div>
+  </div>
+
+  <!-- TAB 1: Calculation Sheet -->
+  {% if selected_tab == 'rm_calc' %}
+    <h2>1. Bloom &amp; Length Calculation Sheet</h2>
+    <p style="color: var(--text-secondary); margin-bottom: 16px; font-size: 13.5px;">Showing all {{ counts.rm_calc|default:0 }} Calculation-sheet rows with rolled section weights, bloom sizes, calculated lengths, cut pieces, end-cut margins, cooling-bed limits, and furnace length limits. Column <strong>SL. NO.</strong> remains fixed on left while scrolling horizontally.</p>
+    
+    <div class="master-table-wrapper" style="width: 100%; overflow-x: auto; position: relative;">
+      <table class="master-table" style="min-width: 2600px;">
+        <thead>
+          <tr>
+            <th class="sticky-sl-no" style="position: sticky; left: 0px; z-index: 40; min-width: 80px; width: 80px; text-align: center;">SL. NO.</th>
+            <th>Planning Mat</th>
+            <th>Rolled Section</th>
+            <th>Material</th>
+            <th>Product</th>
+            <th>Sec Wt (kg/m)</th>
+            <th>Ext Grade</th>
+            <th>Grade group</th>
+            <th>RM Grade</th>
+            <th>RM Size</th>
+            <th>Bloom Length (m)</th>
+            <th>Bloom Wt (kg/m)</th>
+            <th>Total Rolled (m)</th>
+            <th>Finish Len (m)</th>
+            <th>Cut Pcs</th>
+            <th>End Cut Margin Actual</th>
+            <th>RM Calculated Length</th>
+            <th>End Cut Margin Req.</th>
+            <th>Maximum Cooling Bed Length</th>
+            <th>Old Furnace Min Length</th>
+            <th>Old Furnace Max Length</th>
+            <th>New Furnace Min Length</th>
+            <th>New Furnace Max Length</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for r in rm_calc %}
+          <tr>
+            <td class="sticky-sl-no" style="position: sticky; left: 0px; z-index: 25; min-width: 80px; width: 80px; text-align: center; font-weight: 800; color: #38bdf8;">{{ forloop.counter }}</td>
+            <td><strong style="color: var(--primary);">{{ r.planning_mat }}</strong></td>
+            <td>{{ r.rolled_section }}</td>
+            <td>{{ r.material }}</td>
+            <td><span class="status-badge success">{{ r.product }}</span></td>
+            <td>{{ r.sec_wt|default:"--" }}</td>
+            <td>{{ r.ext_grade }}</td>
+            <td><span class="status-badge success" style="background: rgba(245, 158, 11, 0.15); color: #f59e0b; border: 1px solid rgba(245, 158, 11, 0.3);">{{ r.grade_group|default:"--" }}</span></td>
+            <td>{{ r.rm_grade }}</td>
+            <td><strong>{{ r.rm_size }}</strong></td>
+            <td>{{ r.bloom_length_m|default:"--" }}</td>
+            <td>{{ r.bloom_weight_kg_m|default:"--" }}</td>
+            <td>{{ r.total_rolled_length_m|default:"--" }}</td>
+            <td>{{ r.total_finish_length_m|default:"--" }}</td>
+            <td>{{ r.cut_pcs }}</td>
+            <td>{{ r.end_cut_margin|default:"--" }}</td>
+            <td>{{ r.rm_calculated_length_m|default:"--" }}</td>
+            <td>{{ r.end_cut_margin_req|default:"--" }}</td>
+            <td>{{ r.maximum_cooling_bed_length_m|default:"--" }}</td>
+            <td>{{ r.old_furnace_min_len|default:"--" }}</td>
+            <td>{{ r.old_furnace_max_len|default:"--" }}</td>
+            <td>{{ r.new_furnace_min_len|default:"--" }}</td>
+            <td>{{ r.new_furnace_max_len|default:"--" }}</td>
+          </tr>
+          {% empty %}
+          <tr><td colspan="24">No Calculation Master records found in database. Run <code>python manage.py import_rail_mill_length_calc</code> to populate.</td></tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+
+  <!-- TAB 2: Chemistry -->
+  {% elif selected_tab == 'rm_chem' %}
+    <h2>2. Rail Mill Chemistry Sheet</h2>
+    <p style="color: var(--text-secondary); margin-bottom: 16px; font-size: 13.5px;">Chemical composition standards (%C, %Mn, %Si, %S, %P, %Al, %Cu, %Cr, %Ni, CE, N2, O2, H2 ppm) per internal/external grade.</p>
+    
+    <div class="master-table-wrapper" style="width: 100%; overflow-x: auto; position: relative;">
+      <table class="master-table" style="min-width: 1800px;">
+        <thead>
+          <tr>
+            <th class="sticky-sl-no" style="position: sticky; left: 0px; z-index: 40; min-width: 80px; width: 80px; text-align: center;">SL. NO.</th>
+            <th>Product</th>
+            <th>Internal Grade</th>
+            <th>Proposed Grade</th>
+            <th>Ext Grade</th>
+            <th>Range</th>
+            <th>%C</th>
+            <th>%Mn</th>
+            <th>%Si</th>
+            <th>%S</th>
+            <th>%P</th>
+            <th>%Al</th>
+            <th>CE</th>
+            <th>N2 ppm</th>
+            <th>O2 ppm</th>
+            <th>H2 ppm</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for c in rm_chem %}
+          <tr>
+            <td class="sticky-sl-no" style="position: sticky; left: 0px; z-index: 25; min-width: 80px; width: 80px; text-align: center; font-weight: 800; color: #38bdf8;">{{ c.sl_no|default:forloop.counter }}</td>
+            <td><strong>{{ c.product }}</strong></td>
+            <td><strong style="color: var(--primary);">{{ c.internal_grade }}</strong></td>
+            <td>{{ c.proposed_internal_grade|default:"--" }}</td>
+            <td>{{ c.ext_grade }}</td>
+            <td><span class="status-badge success">{{ c.range_type|default:"--" }}</span></td>
+            <td>{{ c.c_pct|default:"--" }}</td>
+            <td>{{ c.mn_pct|default:"--" }}</td>
+            <td>{{ c.si_pct|default:"--" }}</td>
+            <td>{{ c.s_pct|default:"--" }}</td>
+            <td>{{ c.p_pct|default:"--" }}</td>
+            <td>{{ c.al_pct|default:"--" }}</td>
+            <td><strong>{{ c.ce|default:"--" }}</strong></td>
+            <td>{{ c.n2_ppm|default:"--" }}</td>
+            <td>{{ c.o2_ppm|default:"--" }}</td>
+            <td>{{ c.h2_ppm|default:"--" }}</td>
+          </tr>
+          {% empty %}
+          <tr><td colspan="16">No Chemistry records found.</td></tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+
+  <!-- TAB 3: Section Standards (Annexure) -->
+  {% elif selected_tab == 'rm_standards' %}
+    <h2>3. Section Grade &amp; International Standards Mapping</h2>
+    <p style="color: var(--text-secondary); margin-bottom: 16px; font-size: 13.5px;">Mapping of rolled section profiles to IS, EN 10025, ASTM, AS/NZS, IRS T-12:2009, EN 13674 and Fire Resistance standards.</p>
+    
+    <div class="master-table-wrapper" style="width: 100%; overflow-x: auto; position: relative;">
+      <table class="master-table" style="min-width: 1600px;">
+        <thead>
+          <tr>
+            <th class="sticky-sl-no" style="position: sticky; left: 0px; z-index: 40; min-width: 180px;">Rolled Section</th>
+            <th>Flange Thick (mm)</th>
+            <th>Product</th>
+            <th>E250/E275/S275</th>
+            <th>E350/S355/A992/A572Gr50</th>
+            <th>IS E410/JIS/A572Gr60</th>
+            <th>EN S420N</th>
+            <th>EN S460/E450</th>
+            <th>EN S500</th>
+            <th>S355NL</th>
+            <th>IRS T-12</th>
+            <th>EN 13674</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for s in rm_standards %}
+          <tr>
+            <td class="sticky-sl-no" style="position: sticky; left: 0px; z-index: 25; min-width: 180px;"><strong style="color: var(--primary);">{{ s.rolled_section }}</strong></td>
+            <td>{{ s.flange_thickness_mm|default:"--" }}</td>
+            <td>{{ s.product }}</td>
+            <td>{{ s.std_e250_e275|default:"--" }}</td>
+            <td>{{ s.std_e350_s355|default:"--" }}</td>
+            <td>{{ s.std_e410_jis|default:"--" }}</td>
+            <td>{{ s.std_s420n|default:"--" }}</td>
+            <td>{{ s.std_s460_e450|default:"--" }}</td>
+            <td>{{ s.std_s500|default:"--" }}</td>
+            <td>{{ s.std_s355nl|default:"--" }}</td>
+            <td>{{ s.irs_t12|default:"--" }}</td>
+            <td>{{ s.en_13674|default:"--" }}</td>
+          </tr>
+          {% empty %}
+          <tr><td colspan="12">No Section Standards found.</td></tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+
+  <!-- TAB 4: SEC WISE -->
+  {% elif selected_tab == 'rm_secwise' %}
+    <h2>4. Section-Wise Matrix</h2>
+    <p style="color: var(--text-secondary); margin-bottom: 16px; font-size: 13.5px;">Section-specific cutting length, bloom size, total rolled length, finish length, and cut piece distribution matrix.</p>
+    
+    <div class="master-table-wrapper" style="width: 100%; overflow-x: auto; position: relative;">
+      <table class="master-table" style="min-width: 1200px;">
+        <thead>
+          <tr>
+            <th class="sticky-sl-no" style="position: sticky; left: 0px; z-index: 40; min-width: 150px;">Section</th>
+            <th>Section Weight Description</th>
+            <th>Input Size</th>
+            <th>Bloom Length (m)</th>
+            <th>Bloom Wt (kg/m)</th>
+            <th>Total Rolled Len (m)</th>
+            <th>Total Finish Len (m)</th>
+            <th>Cut Pcs</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for sw in rm_secwise %}
+          <tr>
+            <td class="sticky-sl-no" style="position: sticky; left: 0px; z-index: 25; min-width: 150px;"><strong style="color: var(--primary);">{{ sw.section }}</strong></td>
+            <td>{{ sw.section_weight_desc }}</td>
+            <td><strong>{{ sw.input_size }}</strong></td>
+            <td>{{ sw.bloom_length_m|default:"--" }}</td>
+            <td>{{ sw.bloom_weight_kg_m|default:"--" }}</td>
+            <td>{{ sw.total_rolled_length_m|default:"--" }}</td>
+            <td>{{ sw.total_finish_length_m|default:"--" }}</td>
+            <td><span class="status-badge success">{{ sw.cut_pcs|default:"--" }}</span></td>
+          </tr>
+          {% empty %}
+          <tr><td colspan="8">No Section-Wise matrix records found.</td></tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+
+  <!-- TAB 5: Saw Tolerances & RM Section Weights -->
+  {% elif selected_tab == 'rm_saw_rm' %}
+    <h2>5. Hot Saw Length Tolerances &amp; RM Section Weights</h2>
+    <div style="display: flex; gap: 24px; flex-wrap: wrap; margin-top: 16px;">
+      <div style="flex: 1; min-width: 300px;">
+        <h3>Hot Saw Tolerances</h3>
+        <div class="master-table-wrapper" style="width: 100%; overflow-x: auto; position: relative;">
+          <table class="master-table">
+            <thead>
+              <tr>
+                <th class="sticky-sl-no" style="position: sticky; left: 0px; z-index: 40;">Length Condition</th>
+                <th>Tolerance (m)</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% for st in rm_saw %}
+              <tr>
+                <td class="sticky-sl-no" style="position: sticky; left: 0px; z-index: 25;"><strong>{{ st.condition }}</strong></td>
+                <td><span class="status-badge success">{{ st.tolerance_m }} m</span></td>
+              </tr>
+              {% empty %}
+              <tr><td colspan="2">No Hot Saw tolerances configured.</td></tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <div style="flex: 1; min-width: 300px;">
+        <h3>Raw Material Sectional Weights</h3>
+        <div class="master-table-wrapper" style="width: 100%; overflow-x: auto; position: relative;">
+          <table class="master-table">
+            <thead>
+              <tr>
+                <th class="sticky-sl-no" style="position: sticky; left: 0px; z-index: 40;">RM Section</th>
+                <th>Weight (t/m)</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% for rw in rm_weights %}
+              <tr>
+                <td class="sticky-sl-no" style="position: sticky; left: 0px; z-index: 25;"><strong style="color: var(--primary);">{{ rw.rm_sec }}</strong></td>
+                <td><strong>{{ rw.weight_t_per_m }} t/m</strong></td>
+              </tr>
+              {% empty %}
+              <tr><td colspan="2">No RM Section weights configured.</td></tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+  <!-- TAB 6: Planning Materials -->
+  {% elif selected_tab == 'rm_mat' %}
+    <h2>6. Rail Mill Planning Materials List</h2>
+    <p style="color: var(--text-secondary); margin-bottom: 16px; font-size: 13.5px;">Master list of all planning materials extracted from the workbook.</p>
+    
+    <div class="master-table-wrapper" style="width: 100%; overflow-x: auto; position: relative;">
+      <table class="master-table">
+        <thead>
+          <tr>
+            <th class="sticky-sl-no" style="position: sticky; left: 0px; z-index: 40; min-width: 80px; width: 80px; text-align: center;">#</th>
+            <th>Planning Material</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for pm in rm_materials %}
+          <tr>
+            <td class="sticky-sl-no" style="position: sticky; left: 0px; z-index: 25; min-width: 80px; width: 80px; text-align: center; font-weight: 800; color: #38bdf8;">{{ forloop.counter }}</td>
+            <td><strong style="color: var(--primary);">{{ pm.planning_mat }}</strong></td>
+          </tr>
+          {% empty %}
+          <tr><td colspan="2">No planning materials found.</td></tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+
+  <!-- TAB 7: Legacy Weight Maps -->
+  {% elif selected_tab == 'secwt' %}
+    <h2>Legacy Section Weight Rules Map</h2>
+    
+    <div class="master-table-wrapper" style="width: 100%; overflow-x: auto; position: relative;">
+      <table class="master-table" style="min-width: 1200px;">
+        <thead>
+          <tr>
+            <th class="sticky-sl-no" style="position: sticky; left: 0px; z-index: 40; min-width: 160px;">Finished Section</th>
+            <th>Finished Weight (kg/m)</th>
+            <th>Casting Section</th>
+            <th>Casting Length (m)</th>
+            <th>Tolerance</th>
+            <th>Location</th>
+            <th>RM Family</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for w in sec_wts %}
+          <tr>
+            <td class="sticky-sl-no" style="position: sticky; left: 0px; z-index: 25; min-width: 160px;"><strong style="color: var(--primary);">{{ w.planning_section }}</strong></td>
+            <td>{{ w.section_weight }}</td>
+            <td>{{ w.raw_section }}</td>
+            <td><strong>{{ w.casting_length }} m</strong></td>
+            <td><span class="status-badge success">{{ w.tolerance }}</span></td>
+            <td><span class="status-badge success">{{ w.location }}</span></td>
+            <td>{{ w.rm_family }}</td>
+          </tr>
+          {% empty %}
+          <tr><td colspan="7">No weight maps found.</td></tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  {% endif %}
+
+</section>
+
+<script>
+  function filterMasterTable() {
+    const input = document.getElementById('masterTableSearch');
+    const clearBtn = document.getElementById('clearSearchBtn');
+    const countBadge = document.getElementById('searchResultCount');
+    const matchCountSpan = document.getElementById('matchCount');
+    const filter = input ? input.value.trim().toLowerCase() : '';
+
+    if (clearBtn) {
+      clearBtn.style.display = filter.length > 0 ? 'inline-block' : 'none';
+    }
+
+    const tables = document.querySelectorAll('.master-table');
+    tables.forEach(table => {
+      const rows = table.querySelectorAll('tbody tr');
+      let visibleCount = 0;
+      let totalCount = 0;
+
+      rows.forEach(row => {
+        if (row.id === 'no-search-results') return;
+        
+        // Skip empty row messages
+        if (row.cells.length === 1 && row.cells[0].getAttribute('colspan')) {
+          return;
+        }
+
+        totalCount++;
+        const text = row.textContent.toLowerCase();
+        if (!filter || text.includes(filter)) {
+          row.style.display = '';
+          visibleCount++;
+        } else {
+          row.style.display = 'none';
+        }
+      });
+
+      // Manage empty state row
+      let noResultsRow = table.querySelector('#no-search-results');
+      if (filter && visibleCount === 0 && totalCount > 0) {
+        if (!noResultsRow) {
+          const colCount = table.querySelectorAll('thead th').length || 10;
+          noResultsRow = document.createElement('tr');
+          noResultsRow.id = 'no-search-results';
+          noResultsRow.innerHTML = `
+            <td colspan="${colCount}" style="text-align: center; padding: 48px 20px; color: var(--text-secondary);">
+              <div style="font-size: 32px; margin-bottom: 8px;">🔍</div>
+              <div style="font-size: 15px; font-weight: 700; color: var(--text-primary); margin-bottom: 4px;">No matching records found</div>
+              <div style="font-size: 12.5px; color: var(--text-muted); margin-bottom: 12px;">No records match "${filter.replace(/"/g, '&quot;')}"</div>
+              <button type="button" onclick="clearMasterTableSearch()" class="button button-secondary" style="padding: 6px 14px; font-size: 12px;">Clear Search Filter</button>
+            </td>
+          `;
+          table.querySelector('tbody').appendChild(noResultsRow);
+        } else {
+          noResultsRow.style.display = '';
+        }
+      } else if (noResultsRow) {
+        noResultsRow.style.display = 'none';
+      }
+
+      if (countBadge && matchCountSpan) {
+        if (filter) {
+          countBadge.style.display = 'inline-flex';
+          matchCountSpan.textContent = visibleCount;
+        } else {
+          countBadge.style.display = 'none';
+        }
+      }
+    });
+  }
+
+  function clearMasterTableSearch() {
+    const input = document.getElementById('masterTableSearch');
+    if (input) {
+      input.value = '';
+      filterMasterTable();
+      input.focus();
+    }
+  }
+
+  document.addEventListener('DOMContentLoaded', function() {
+    // Check URL search param if present
+    const urlParams = new URLSearchParams(window.location.search);
+    const searchParam = urlParams.get('search');
+    if (searchParam) {
+      const input = document.getElementById('masterTableSearch');
+      if (input) {
+        input.value = searchParam;
+        filterMasterTable();
+      }
+    }
+  });
+</script>
+{% endblock %}

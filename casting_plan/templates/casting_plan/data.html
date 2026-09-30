@@ -1,0 +1,61 @@
+{% extends 'casting_plan/base.html' %}
+{% block page_title %}Demand / Orders{% endblock %}
+{% block content %}
+<div class="top">
+  <div><div class="eyebrow">INPUT</div><h1>Demand Input & Order Selection</h1><p>Upload the input casting-plan workbook, review imported demand and select what should enter the casting plan.</p></div>
+</div>
+
+<section class="panel" style="padding:24px; margin-bottom:22px;">
+  <div class="section-heading"><div><h2>1. Upload Demand Input Excel</h2><p>The importer reads the <strong>PLAN...</strong> sheet (for example <strong>PLAN UB_305</strong>) and extracts planning material, grade, quantity, length, delivery and release data.</p></div></div>
+  <form method="post" action="{% url 'upload_demand' %}" enctype="multipart/form-data" class="upload-form">
+    {% csrf_token %}
+    <label class="file-drop"><input type="file" name="demand_file" accept=".xlsx,.xlsm" required><span><strong>Choose Demand Excel</strong><small>.xlsx or .xlsm</small></span></label>
+    <label class="check-inline"><input type="checkbox" name="replace" value="1" checked> Replace existing imported demand</label>
+    <button class="button" type="submit">Import Demand →</button>
+  </form>
+</section>
+
+<section class="cards result" style="margin-bottom:22px;">
+  <div><b>{{summary.total}}</b><span>Imported Demand Rows</span></div>
+  <div><b>{{summary.selected}}</b><span>Selected for Planning</span></div>
+  <div><b>{{summary.net_demand|floatformat:2}} T</b><span>Selected Net Demand</span></div>
+</section>
+
+<section class="panel" style="padding:24px;">
+  <div class="section-heading"><div><h2>2. Review & Select Demand</h2><p>Net demand uses the imported balance quantity and available stock fields. Source columns remain preserved for traceability.</p></div></div>
+  {% if orders %}
+  <form method="post" action="{% url 'update_demand_selection' %}">
+    {% csrf_token %}
+    <div style="overflow-x:auto; max-height:560px;">
+      <table>
+        <thead><tr><th>Select</th><th>SO No.</th><th>Item</th><th>Planning Material</th><th>Grade</th><th>Order Qty</th><th>PGI</th><th>Balance</th><th>Net Demand</th><th>Cut Length</th><th>Req. Delivery</th><th>RM Status</th></tr></thead>
+        <tbody>
+        {% for o in orders %}
+          <tr>
+            <td><input type="hidden" name="visible_order" value="{{o.id}}"><input type="checkbox" name="selected_order" value="{{o.id}}" {% if o.is_selected %}checked{% endif %}></td>
+            <td><strong style="color:var(--primary)">{{o.so_no}}</strong></td><td>{{o.so_item}}</td><td>{{o.section}}</td><td>{{o.grade}}</td>
+            <td>{{o.quantity|floatformat:3}}</td><td>{{o.pgi_qty|floatformat:3}}</td><td>{{o.balance_qty|floatformat:3}}</td><td><strong>{{o.net_demand|floatformat:3}}</strong></td>
+            <td>{{o.cutting_length}}</td><td>{{o.required_delivery_date|default:o.promise_date}}</td><td>{{o.status}}</td>
+          </tr>
+        {% endfor %}
+        </tbody>
+      </table>
+    </div>
+    <div style="display:flex; justify-content:flex-end; gap:12px; margin-top:18px;"><button class="button" type="submit">Save Selection</button></div>
+  </form>
+  {% else %}
+  <div class="callout">No demand is imported yet. Upload <strong>input casting plan.xlsm</strong> or the same-format SAP/order export.</div>
+  {% endif %}
+</section>
+
+{% if orders %}
+<section class="panel" style="padding:24px; margin-top:22px;">
+  <div class="section-heading"><div><h2>3. Generate Casting Plan Output</h2><p>The system groups selected demand by SPM section and grade, applies the imported SPM rules and generates an Excel file in the supplied <strong>Casting plan.xlsx</strong> structure.</p></div></div>
+  <form method="post" action="{% url 'generate_plan' %}" class="generate-form">
+    {% csrf_token %}
+    <label>Plan Name<input type="text" name="plan_name" value="SPM Casting Plan"></label>
+    <button class="button" type="submit">Generate Casting Plan →</button>
+  </form>
+</section>
+{% endif %}
+{% endblock %}

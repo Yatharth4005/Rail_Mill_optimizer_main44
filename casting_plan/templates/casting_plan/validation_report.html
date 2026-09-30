@@ -1,0 +1,18 @@
+{% extends 'casting_plan/base.html' %}
+{% block page_title %}Validation Report{% endblock %}
+{% block content %}
+<div class="top">
+  <div>
+    <div class="eyebrow">QUALITY ASSURANCE</div>
+    <h1>Golden Validation Report</h1>
+    <p>Displays comparison metrics comparing the optimized generated casting output against reference data.</p>
+  </div>
+</div>
+
+<section class="panel" style="padding: 24px;">
+  <h2>Active Validation Results</h2>
+  <p style="color: var(--text-secondary); margin-bottom: 20px; font-size: 13.5px;">This report is automatically written during golden verification runs to compare sheet blocks, quantities, grades, lengths, locations, and tolerances.</p>
+  
+  <div style="background: #1e293b; color: #f8fafc; font-family: 'Courier New', Courier, monospace; font-size: 12.5px; padding: 20px; border-radius: 10px; overflow-x: auto; max-height: 700px; white-space: pre-wrap; line-height: 1.5; border: 1px solid var(--border-color);">{{ content }}</div>
+</section>
+{% endblock %}

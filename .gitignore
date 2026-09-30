@@ -1,0 +1,41 @@
+# Python bytecode & caching
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+
+# Environments
+.venv/
+venv/
+env/
+ENV/
+
+# Databases
+db.sqlite3
+db.sqlite3-journal
+*.sqlite3
+
+# Django static files (collected)
+staticfiles/
+
+# Django media & user uploads (contains excel files, dynamic database files)
+media/
+data/
+
+# Excel spreadsheets, reports and data uploads
+*.xlsx
+*.xlsm
+*.csv
+Casting_Plan_Validation_Report.txt
+
+# Local temporary helper scripts
+crop_image.ps1
+crop_factory_image.py
+crop_vector_ladle.ps1
+
+# IDE & OS-specific files
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
+Desktop.ini

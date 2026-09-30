@@ -1,0 +1,30 @@
+{% extends 'casting_plan/base.html' %}
+{% block page_title %}Casting Plan Output{% endblock %}
+{% block content %}
+<div class="top"><div><div class="eyebrow">OUTPUT</div><h1>Generated Casting Plans</h1><p>Download the generated Excel in the same SBB / 250sq / 165SQ workbook structure as the supplied Casting plan.xlsx.</p></div><a class="button" href="{% url 'data' %}">Create New Plan →</a></div>
+<section class="panel" style="padding:24px;">
+  {% if plans %}
+  <div style="overflow-x:auto;"><table><thead><tr><th>Plan</th><th>Created</th><th>Selected Orders</th><th>Demand</th><th>Estimated RM</th><th>Yield</th><th>Output</th></tr></thead><tbody>
+  {% for p in plans %}
+    <tr>
+      <td><strong>{{p.name}}</strong></td>
+      <td>{{p.created_at|date:'d M Y, H:i'}}</td>
+      <td>{{p.selected_order_count}}</td>
+      <td>{{p.demand_qty|floatformat:3}} T</td>
+      <td>{{p.rm_qty|floatformat:3}} T</td>
+      <td>{{p.yield_pct|floatformat:2}}%</td>
+      <td>
+        <div style="display: flex; gap: 8px; align-items: center;">
+          <a class="button small" href="{% url 'download_plan' p.id %}">Download Excel</a>
+          <form method="post" action="{% url 'delete_plan' p.id %}" style="display: inline; margin: 0; padding: 0;" onsubmit="return confirm('Are you sure you want to delete this casting plan?');">
+            {% csrf_token %}
+            <button type="submit" class="button small" style="background: var(--danger); box-shadow: none; border: none; cursor: pointer; color: white;">Delete</button>
+          </form>
+        </div>
+      </td>
+    </tr>
+  {% endfor %}
+  </tbody></table></div>
+  {% else %}<div class="callout">No casting plan has been generated yet. Import demand, select orders and generate the plan.</div>{% endif %}
+</section>
+{% endblock %}

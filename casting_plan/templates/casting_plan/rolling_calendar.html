@@ -1,0 +1,722 @@
+{% extends 'casting_plan/base.html' %}
+{% load static %}
+
+{% block page_title %}Rolling Calendar — Upload Preport and Rules Report{% endblock %}
+{% block page_subtitle %}{% endblock %}
+
+{% block content %}
+<!-- Step Tracker Bar (8 Steps) -->
+<div class="step-tracker-bar">
+    <a href="{% url 'btr_input' %}" class="step-item completed">
+        <span class="step-num">✓</span>
+        <span>BTR Input</span>
+    </a>
+    <span class="step-divider">—</span>
+    <a href="{% url 'btr_rolling_calendar' %}" class="step-item active">
+        <span class="step-num">2</span>
+        <span>Upload Rolling Calendar</span>
+    </a>
+    <span class="step-divider">—</span>
+    <a href="{% url 'btr_planning_material' %}" class="step-item" {% if not upload_info %}onclick="alert('Please upload a BTR report or select an active file from history first.'); return false;"{% endif %}>
+        <span class="step-num">3</span>
+        <span>Planning Material</span>
+    </a>
+    <span class="step-divider">—</span>
+    <a href="{% url 'btr_camp_plan' %}" class="step-item" {% if not upload_info %}onclick="alert('Please upload a BTR report or select an active file from history first.'); return false;"{% endif %}>
+        <span class="step-num">4</span>
+        <span>Campaign Plan</span>
+    </a>
+    <span class="step-divider">—</span>
+    <a href="{% url 'create_casting_plan' %}" class="step-item" {% if not upload_info %}onclick="alert('Please upload a BTR report or select an active file from history first.'); return false;"{% endif %}>
+        <span class="step-num">5</span>
+        <span>Casting Plan</span>
+    </a>
+    <span class="step-divider">—</span>
+    <a href="{% url 'btr_embossing_plan' %}" class="step-item" {% if not upload_info %}onclick="alert('Please upload a BTR report or select an active file from history first.'); return false;"{% endif %}>
+        <span class="step-num">6</span>
+        <span>Campaign Summary</span>
+    </a>
+    <span class="step-divider">—</span>
+    <a href="{% url 'btr_roll_shop_sequence' %}" class="step-item" {% if not upload_info %}onclick="alert('Please upload a BTR report or select an active file from history first.'); return false;"{% endif %}>
+        <span class="step-num">7</span>
+        <span>Roll Shop Sequence</span>
+    </a>
+    <span class="step-divider">—</span>
+    <a href="{% url 'btr_rolling_plan' %}" class="step-item" {% if not upload_info %}onclick="alert('Please upload a BTR report or select an active file from history first.'); return false;"{% endif %}>
+        <span class="step-num">8</span>
+        <span>Rolling Plan</span>
+    </a>
+</div>
+
+<!-- Page Title & Header Actions -->
+<div style="display: flex; justify-content: space-between; align-items: flex-end; margin-bottom: 20px;">
+    <div>
+        <div style="font-size: 11px; letter-spacing: 1.5px; font-weight: 800; color: #3b82f6; text-transform: uppercase; margin-bottom: 4px;">
+            STEP 2 OF 8 — UPLOAD ROLLING CALENDAR
+        </div>
+        <h1 style="font-size: 24px; font-weight: 800; color: var(--text-primary); margin-bottom: 4px; display: flex; align-items: center; gap: 10px;">
+            <span>Rolling Calendar</span>
+            {% if is_fixed %}
+                <span style="font-size: 11px; background: rgba(16, 185, 129, 0.15); color: #10b981; border: 1px solid rgba(16, 185, 129, 0.4); padding: 3px 10px; border-radius: 20px; font-weight: 800; display: inline-flex; align-items: center; gap: 4px;">
+                    ✓ Fixed & Saved
+                </span>
+            {% endif %}
+        </h1>
+        <p style="font-size: 13px; color: var(--text-secondary);">Oldest rolling priority, raw-material grouping and executable minimum rules are applied automatically.</p>
+    </div>
+    <div style="display: flex; align-items: center; gap: 12px;">
+        <!-- Refresh to Default Button -->
+        <a href="{% url 'btr_reset_calendar_sequence' %}" class="button-secondary" style="padding: 10px 18px; font-size: 13px; font-weight: 700; border-radius: 30px; border: 1px solid var(--border-color); color: var(--text-primary); text-decoration: none; display: inline-flex; align-items: center; gap: 6px; background: var(--bg-card-sub); cursor: pointer;" title="Reset drag sequence to original default sequencing">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="23 4 23 10 17 10"></polyline><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"></path></svg>
+            <span>Refresh to Default</span>
+        </a>
+
+        <!-- Save and Fix Button -->
+        <a href="{% url 'btr_save_and_fix_calendar' %}" class="button" style="background: linear-gradient(135deg, #10b981 0%, #059669 100%); color: #ffffff; padding: 10px 20px; font-size: 13px; font-weight: 700; border-radius: 30px; box-shadow: 0 4px 15px rgba(16, 185, 129, 0.35); border: none; text-decoration: none; display: inline-flex; align-items: center; gap: 6px;" title="Save and fix current rolling calendar for active reports and move forward">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"></path><polyline points="17 21 17 13 7 13 7 21"></polyline><polyline points="7 3 7 8 15 8"></polyline></svg>
+            <span>Save and Fix</span>
+        </a>
+
+        <!-- Continue to Step 3 Button -->
+        <a href="{% url 'btr_planning_material' %}" class="button" style="background: linear-gradient(135deg, #ff6b00 0%, #ff5500 100%); color: #ffffff; padding: 10px 24px; font-size: 13.5px; font-weight: 700; border-radius: 30px; box-shadow: 0 4px 15px rgba(255, 107, 0, 0.35); border: none; text-decoration: none; display: inline-flex; align-items: center; gap: 8px;">
+            <span>Continue to Step 3: Planning Material</span>
+            <span style="font-size: 15px;">→</span>
+        </a>
+    </div>
+</div>
+
+<!-- Upload Cards (Two Columns matching Image 1) -->
+<div class="grid2" style="margin-bottom: 22px;">
+    <!-- Left Card: Upload Preport File -->
+    <div class="panel" style="margin-bottom: 0;">
+        <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 12px;">
+            <div style="width: 40px; height: 40px; border-radius: 10px; background: rgba(59, 130, 246, 0.12); border: 1px solid rgba(59, 130, 246, 0.3); display: flex; align-items: center; justify-content: center; color: #3b82f6;">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line></svg>
+            </div>
+            <div>
+                <h3 style="font-size: 15px; font-weight: 800; color: var(--text-primary); margin: 0 0 2px 0;">Upload Preport File</h3>
+                <p style="font-size: 11.5px; color: var(--text-secondary); margin: 0;">Upload monthly preports (e.g., Techno Economic July/Aug/Sep).</p>
+            </div>
+        </div>
+
+        <form method="post" action="{% url 'btr_upload_preport' %}" enctype="multipart/form-data" id="preportForm">
+            {% csrf_token %}
+            <div style="display: flex; gap: 10px; align-items: center;">
+                <input type="file" name="preport_file" id="preportInput" accept=".xlsx,.xlsm" multiple style="display: none;" onchange="this.form.submit();">
+                <button type="button" class="button-secondary" style="padding: 9px 16px; font-size: 12px; font-weight: 700; width: 100%; justify-content: center;" onclick="document.getElementById('preportInput').click();">
+                    📁 Select Preport File(s)
+                </button>
+            </div>
+        </form>
+
+        <!-- Uploaded Files Pills -->
+        <div style="display: flex; flex-wrap: wrap; gap: 8px; margin-top: 14px;">
+            {% if preport_files %}
+                {% for pf in preport_files %}
+                    <div style="display: inline-flex; align-items: center; gap: 8px; background: var(--bg-card-sub); border: 1px solid var(--border-color); border-radius: 8px; padding: 6px 12px; font-size: 12px; font-weight: 600; color: var(--text-primary);">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#3b82f6" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path></svg>
+                        <span>{{ pf.name }}</span>
+                        <span style="color: var(--success); font-weight: 800;">✓</span>
+                        <a href="{% url 'btr_remove_calendar_file' %}?type=preport&filename={{ pf.name|urlencode }}" style="color: var(--text-muted); text-decoration: none; font-size: 13px; font-weight: 700; margin-left: 2px;" title="Remove file">✕</a>
+                    </div>
+                {% endfor %}
+            {% else %}
+                <div style="font-size: 11.5px; color: var(--text-muted); font-style: italic;">No preport files uploaded yet. Default preports will be used.</div>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- Right Card: Upload Rules Report -->
+    <div class="panel" style="margin-bottom: 0;">
+        <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 12px;">
+            <div style="width: 40px; height: 40px; border-radius: 10px; background: rgba(59, 130, 246, 0.12); border: 1px solid rgba(59, 130, 246, 0.3); display: flex; align-items: center; justify-content: center; color: #3b82f6;">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"></circle><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"></path></svg>
+            </div>
+            <div>
+                <h3 style="font-size: 15px; font-weight: 800; color: var(--text-primary); margin: 0 0 2px 0;">Upload Rules Report</h3>
+                <p style="font-size: 11.5px; color: var(--text-secondary); margin: 0;">Upload section material rules (e.g., Rules.xlsx).</p>
+            </div>
+        </div>
+
+        <form method="post" action="{% url 'btr_upload_rules' %}" enctype="multipart/form-data" id="rulesForm">
+            {% csrf_token %}
+            <div style="display: flex; gap: 10px; align-items: center;">
+                <input type="file" name="rules_file" id="rulesInput" accept=".xlsx,.xlsm" style="display: none;" onchange="this.form.submit();">
+                <button type="button" class="button-secondary" style="padding: 9px 16px; font-size: 12px; font-weight: 700; width: 100%; justify-content: center;" onclick="document.getElementById('rulesInput').click();">
+                    ⚙️ Select Rules File
+                </button>
+            </div>
+        </form>
+
+        <!-- Uploaded Rules Pills -->
+        <div style="display: flex; flex-wrap: wrap; gap: 8px; margin-top: 14px;">
+            {% if rules_files %}
+                {% for rf in rules_files %}
+                    <div style="display: inline-flex; align-items: center; gap: 8px; background: var(--bg-card-sub); border: 1px solid var(--border-color); border-radius: 8px; padding: 6px 12px; font-size: 12px; font-weight: 600; color: var(--text-primary);">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#3b82f6" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path></svg>
+                        <span>{{ rf.name }}</span>
+                        <span style="color: var(--success); font-weight: 800;">✓</span>
+                        <a href="{% url 'btr_remove_calendar_file' %}?type=rules&filename={{ rf.name|urlencode }}" style="color: var(--text-muted); text-decoration: none; font-size: 13px; font-weight: 700; margin-left: 2px;" title="Remove file">✕</a>
+                    </div>
+                {% endfor %}
+            {% else %}
+                <div style="font-size: 11.5px; color: var(--text-muted); font-style: italic;">No rules file uploaded yet. Rules.xlsx default will be used.</div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+<!-- Three Stat Boxes (Matching Image 1) -->
+<div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; margin-bottom: 22px;">
+    <!-- Stat 1: EXECUTABLE SECTIONS -->
+    <div style="background: var(--bg-card); border: 1px solid var(--border-color); border-radius: var(--radius-lg); padding: 20px; box-shadow: var(--shadow-sm);">
+        <div style="font-size: 11px; font-weight: 800; color: var(--text-secondary); letter-spacing: 0.8px; text-transform: uppercase;">EXECUTABLE SECTIONS</div>
+        <div style="font-size: 32px; font-weight: 800; color: var(--success); margin-top: 6px;" id="statExecSections">{{ executable_count|default:10 }}</div>
+    </div>
+
+    <!-- Stat 2: TOTAL CAMP QTY -->
+    <div style="background: var(--bg-card); border: 1px solid var(--border-color); border-radius: var(--radius-lg); padding: 20px; box-shadow: var(--shadow-sm);">
+        <div style="font-size: 11px; font-weight: 800; color: var(--text-secondary); letter-spacing: 0.8px; text-transform: uppercase;">TOTAL CAMP QTY</div>
+        <div style="font-size: 32px; font-weight: 800; color: var(--text-primary); margin-top: 6px;" id="statTotalCamp">{{ total_camp_qty_fmt|default:"27,000" }}</div>
+    </div>
+
+    <!-- Stat 3: BELOW RULE / UNMAPPED -->
+    <div style="background: var(--bg-card); border: 1px solid var(--border-color); border-radius: var(--radius-lg); padding: 20px; box-shadow: var(--shadow-sm);">
+        <div style="font-size: 11px; font-weight: 800; color: var(--text-secondary); letter-spacing: 0.8px; text-transform: uppercase;">BELOW RULE / UNMAPPED</div>
+        <div style="font-size: 32px; font-weight: 800; color: #ef4444; margin-top: 6px;" id="statUnmapped">{{ unmapped_count|default:27 }}</div>
+    </div>
+</div>
+
+<!-- Rolling Calendar Data Table Card (Matching Image 1 & Image 2) -->
+<div class="panel">
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 18px; flex-wrap: wrap; gap: 12px;">
+        <h2 style="margin: 0; font-size: 13px; font-weight: 800; color: var(--text-secondary); letter-spacing: 0.8px; display: flex; align-items: center; gap: 8px;">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#3b82f6" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg>
+            <span>ROLLING CALENDAR DATA</span>
+        </h2>
+
+        <div style="display: flex; gap: 10px; align-items: center;">
+            <input type="text" id="tableSearchInput" placeholder="Search Section Material, RM, BTC..." class="search-input" style="width: 240px; padding: 7px 12px; font-size: 12px;">
+            <button type="button" class="button-secondary" style="padding: 7px 14px; font-size: 12px; font-weight: 700; display: inline-flex; align-items: center; gap: 6px;">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"></polygon></svg>
+                <span>Filters</span>
+            </button>
+        </div>
+    </div>
+
+<!-- Main Table Container -->
+    <style>
+        #rollingCalendarTable {
+            border-collapse: separate !important;
+            border-spacing: 0 !important;
+        }
+        #rollingCalendarTable th,
+        #rollingCalendarTable td {
+            border-right: 1px solid var(--border-color) !important;
+            border-bottom: 1px solid var(--border-color) !important;
+        }
+        #rollingCalendarTable th:last-child,
+        #rollingCalendarTable td:last-child {
+            border-right: none !important;
+        }
+        .row-below-rule {
+            background: rgba(148, 163, 184, 0.12) !important;
+            opacity: 0.55;
+            filter: grayscale(0.4);
+        }
+        .row-below-rule td {
+            color: #64748b !important;
+        }
+        .row-deleted {
+            background: rgba(239, 68, 68, 0.14) !important;
+            opacity: 0.72;
+        }
+        .calendar-field {
+            width: 100%; min-width: 74px; padding: 5px 7px; box-sizing: border-box;
+            border: 1px solid transparent; border-radius: 5px; text-align: inherit;
+            background: transparent; color: inherit; font: inherit; font-weight: inherit;
+        }
+        .calendar-field[readonly] { pointer-events: none; }
+        .field-start_date, .field-end_date { min-width: 165px; }
+        .row-editing .calendar-field {
+            pointer-events: auto; background: var(--bg-card); border-color: #3b82f6;
+            color: var(--text-primary) !important;
+        }
+        .status-pill { display: inline-block; padding: 4px 8px; border-radius: 999px; font-weight: 800; white-space: nowrap; }
+        .status-executable { color: #047857; background: rgba(16,185,129,.15); }
+        .status-non-executable { color: #b91c1c; background: rgba(239,68,68,.15); }
+        .action-icon { border: 0; background: transparent; cursor: pointer; padding: 5px; border-radius: 5px; font-size: 15px; }
+        .action-icon:hover { background: rgba(59,130,246,.12); }
+    </style>
+    <div class="table-card-wrapper" style="border: 1px solid var(--border-color); border-radius: var(--radius-md); overflow-x: auto; background: var(--bg-card-sub);">
+        <table id="rollingCalendarTable" style="width: 100%; border-collapse: separate; border-spacing: 0; min-width: 1780px; font-size: 12px;">
+            <thead>
+                <tr style="background: var(--table-header-bg); border-bottom: 2px solid var(--border-color);">
+                    <th style="padding: 12px 10px; width: 40px; text-align: center;"></th>
+                    <th style="padding: 12px 10px; font-weight: 800; color: var(--text-secondary); text-align: center;">SEQ.</th>
+                    <th style="padding: 12px 10px; font-weight: 800; color: var(--text-secondary); text-align: center;">Casting Req. upto</th>
+                    <th style="padding: 12px 10px; font-weight: 800; color: var(--text-secondary); text-align: right;">RM Qty</th>
+                    <th style="padding: 12px 10px; font-weight: 800; color: var(--text-secondary); text-align: right;">RM Cast</th>
+                    <th style="padding: 12px 10px; font-weight: 800; color: var(--text-secondary); text-align: right;">BTC</th>
+                    <th style="padding: 12px 10px; font-weight: 800; color: var(--text-secondary); text-align: left;">RM</th>
+                    <th style="padding: 12px 10px; font-weight: 800; color: var(--text-secondary); text-align: left;">Section</th>
+                    <th style="padding: 12px 10px; font-weight: 800; color: var(--text-secondary); text-align: right;">Camp. Qty</th>
+                    <th style="padding: 12px 10px; font-weight: 800; color: var(--text-secondary); text-align: right;">Actual BTR</th>
+                    <th style="padding: 12px 10px; font-weight: 800; color: var(--text-secondary); text-align: center;">BTR Req.</th>
+                    <th style="padding: 12px 10px; font-weight: 800; color: var(--text-secondary); text-align: center;">Last production date</th>
+                    <th style="padding: 12px 10px; font-weight: 800; color: var(--text-secondary); text-align: center;">Last Rolling Qty</th>
+                    <th style="padding: 12px 10px; font-weight: 800; color: var(--text-secondary); text-align: right;">PH</th>
+                    <th style="padding: 12px 10px; font-weight: 800; color: var(--text-secondary); text-align: right;">RT</th>
+                    <th style="padding: 12px 10px; font-weight: 800; color: var(--text-secondary); text-align: center;">Start Date</th>
+                    <th style="padding: 12px 10px; font-weight: 800; color: var(--text-secondary); text-align: center;">End Date</th>
+                    <th style="padding: 12px 10px; font-weight: 800; color: var(--text-secondary); text-align: center;">Delay (Hrs)</th>
+                    <th style="padding: 12px 10px; font-weight: 800; color: var(--text-secondary); text-align: center;">Status</th>
+                    <th style="padding: 12px 10px; font-weight: 800; color: var(--text-secondary); text-align: center;">Action</th>
+                </tr>
+            </thead>
+            <tbody id="calendarTableBody">
+                {% if calendar_rows %}
+                    {% for row in calendar_rows %}
+                        <tr class="draggable-row {% if row.is_inactive %}row-below-rule{% endif %} {% if row.is_deleted %}row-deleted{% endif %}" data-row-id="{{ row.id }}" data-section="{{ row.section }}" data-actual-btr="{{ row.actual_btr }}" data-base-camp-qty="{{ row.base_camp_qty }}" data-below-rule="{{ row.is_below_rule|yesno:'true,false' }}" data-forced-active="{{ row.is_forced_active|yesno:'true,false' }}" data-deleted="{{ row.is_deleted|yesno:'true,false' }}" draggable="true" style="border-bottom: 1px solid var(--border-color); transition: background 0.15s ease;">
+                            <!-- Drag Handle (Image 3 6 dots icon) -->
+                            <td class="drag-handle" style="padding: 12px 10px; text-align: center; cursor: grab; user-select: none; color: var(--text-muted); font-size: 16px; font-weight: 900;" title="Drag to reorder row">
+                                ⠿
+                            </td>
+                            <!-- SEQ. -->
+                            <td class="cell-seq" style="padding: 12px 10px; text-align: center; font-weight: 800; color: var(--text-secondary);">
+                                {{ row.seq }}
+                            </td>
+                            <!-- Casting Req. upto -->
+                            <td class="cell-casting-req" style="padding: 12px 10px; text-align: center; font-weight: 600; color: var(--text-primary); white-space: nowrap;">
+                                {{ row.casting_req_fmt }}
+                            </td>
+                            <!-- RM Qty -->
+                            <td style="padding: 12px 10px; text-align: right; font-weight: 700; color: var(--text-primary);">
+                                <input class="calendar-field field-rm_qty" type="number" min="0" step="1" value="{{ row.rm_qty }}" readonly>
+                            </td>
+                            <!-- RM Cast -->
+                            <td style="padding: 12px 10px; text-align: right; font-weight: 700; color: var(--text-primary);">
+                                <input class="calendar-field field-rm_cast" type="number" min="0" step="1" value="{{ row.rm_cast }}" readonly>
+                            </td>
+                            <!-- BTC -->
+                            <td class="cell-btc" style="padding: 12px 10px; text-align: right; font-weight: 700; color: var(--text-primary);">
+                                {{ row.btc }}
+                            </td>
+                            <!-- RM -->
+                            <td style="padding: 12px 10px; text-align: left; font-weight: 700; color: var(--text-primary); white-space: nowrap;">
+                                {{ row.rm }}
+                            </td>
+                            <!-- Section (Highlighted Green if Rail section) -->
+                            <td style="padding: 12px 10px; text-align: left; font-weight: 800; white-space: nowrap;">
+                                {% if row.is_green_section %}
+                                    <span style="background: rgba(34, 197, 94, 0.2); color: #22c55e; padding: 4px 10px; border-radius: 4px; border: 1px solid rgba(34, 197, 94, 0.4); display: inline-block;">
+                                        {{ row.section }}
+                                    </span>
+                                {% else %}
+                                    <span style="color: var(--text-primary);">{{ row.section }}</span>
+                                {% endif %}
+                                {% if row.is_below_rule %}
+                                    <span style="font-size: 10px; background: rgba(239, 68, 68, 0.15); color: #ef4444; border: 1px solid rgba(239, 68, 68, 0.3); border-radius: 3px; padding: 2px 6px; margin-left: 6px; font-weight: 700;">
+                                        Below Rule
+                                    </span>
+                                {% endif %}
+                            </td>
+                            <!-- Camp. Qty -->
+                            <td style="padding: 12px 10px; text-align: right; font-weight: 800; color: var(--text-primary);">
+                                <input class="calendar-field field-camp_qty" type="number" min="0" step="1" value="{{ row.camp_qty }}" readonly>
+                            </td>
+                            <!-- Actual BTR -->
+                            <td style="padding: 12px 10px; text-align: right; font-weight: 600; color: var(--text-secondary);">
+                                {{ row.actual_btr }}
+                            </td>
+                            <!-- BTR Req. = Camp Qty - Actual BTR -->
+                            <td class="cell-btr-req" style="padding: 12px 10px; text-align: center; font-weight: 700; color: var(--text-primary); white-space: nowrap;">
+                                {{ row.btr_req }}
+                            </td>
+                            <!-- Last production date -->
+                            <td style="padding: 12px 10px; text-align: center; font-weight: 600; color: var(--text-primary); white-space: nowrap;">
+                                {{ row.last_production_date }}
+                            </td>
+                            <!-- Last Rolling Qty -->
+                            <td style="padding: 12px 10px; text-align: center; font-weight: 600; color: var(--text-muted);">
+                                <input class="calendar-field field-last_rolling" type="number" min="0" step="0.1" placeholder="Enter qty" value="{% if row.last_rolling != '-' %}{{ row.last_rolling }}{% endif %}" readonly>
+                            </td>
+                            <!-- PH -->
+                            <td class="cell-ph" style="padding: 12px 10px; text-align: right; font-weight: 700; color: var(--text-primary);">
+                                {{ row.ph }}
+                            </td>
+                            <!-- RT -->
+                            <td class="cell-rt" style="padding: 12px 10px; text-align: right; font-weight: 800; color: var(--text-primary);">
+                                {{ row.rt }}
+                            </td>
+                            <!-- Start Date -->
+                            <td class="cell-start-date" style="padding: 12px 10px; text-align: center; font-weight: 600; color: var(--text-primary); white-space: nowrap;">
+                                <input class="calendar-field field-start_date" type="datetime-local" value="{{ row.start_date_input }}" data-manual="{% if row.has_start_override %}true{% else %}false{% endif %}" readonly>
+                            </td>
+                            <!-- End Date -->
+                            <td class="cell-end-date" style="padding: 12px 10px; text-align: center; font-weight: 600; color: var(--text-primary); white-space: nowrap;">
+                                <input class="calendar-field field-end_date" type="datetime-local" value="{{ row.end_date_input }}" data-manual="{% if row.has_end_override %}true{% else %}false{% endif %}" readonly>
+                            </td>
+                            <!-- Delay (Hrs) -->
+                            <td class="cell-delay" style="padding: 12px 10px; text-align: center; font-weight: 800; color: #ef4444;">
+                                {{ row.delay }}
+                            </td>
+                            <td style="padding: 12px 10px; text-align: center;" title="{{ row.status_reason }}">
+                                <span class="status-pill {% if row.status == 'Executable' %}status-executable{% else %}status-non-executable{% endif %}">{{ row.status }}</span>
+                                {% if row.status == 'Non executable' %}<div style="font-size:10px; margin-top:4px; color:#b91c1c; max-width:180px;">{{ row.status_reason }}</div>{% endif %}
+                            </td>
+                            <td style="padding: 12px 10px; text-align: center; white-space: nowrap;">
+                                <button type="button" class="action-icon edit-row-btn" title="Edit row">✎</button>
+                                <button type="button" class="action-icon delete-row-btn" title="Move row to deleted area" {% if row.is_deleted %}hidden{% endif %}>🗑</button>
+                                <button type="button" class="action-icon restore-row-btn" title="Restore row" {% if not row.is_deleted %}hidden{% endif %}>↶</button>
+                            </td>
+                        </tr>
+                    {% endfor %}
+                {% else %}
+                    <tr>
+                        <td colspan="20" style="padding: 48px 20px; text-align: center; background: var(--bg-card);">
+                            <div style="max-width: 500px; margin: 0 auto; text-align: center;">
+                                <div style="width: 56px; height: 56px; margin: 0 auto 16px auto; border-radius: 16px; background: rgba(59, 130, 246, 0.12); border: 1px solid rgba(59, 130, 246, 0.3); display: flex; align-items: center; justify-content: center; color: #3b82f6;">
+                                    <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line></svg>
+                                </div>
+                                <h3 style="font-size: 16px; font-weight: 800; color: var(--text-primary); margin: 0 0 6px 0;">No Preport File Uploaded</h3>
+                                <p style="font-size: 12.5px; color: var(--text-secondary); margin: 0 0 18px 0; line-height: 1.5;">
+                                    Please upload a Preport Excel file (e.g. Techno Economic July/Aug/Sep) above to compute and view the Rolling Calendar.
+                                </p>
+                                <button type="button" class="button" style="padding: 9px 22px; font-size: 12.5px; font-weight: 700; border-radius: 30px; background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%); color: #ffffff; border: none; cursor: pointer; box-shadow: 0 4px 12px rgba(37, 99, 235, 0.3);" onclick="document.getElementById('preportInput').click();">
+                                    📁 Upload Preport File Now
+                                </button>
+                            </div>
+                        </td>
+                    </tr>
+                {% endif %}
+            </tbody>
+        </table>
+    </div>
+
+    <!-- Table Footer Pagination bar -->
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 16px; font-size: 12px; color: var(--text-secondary);">
+        <div>Showing 1 - {{ calendar_rows|length }} of 27 records</div>
+        <div style="display: flex; gap: 6px; align-items: center;">
+            <button type="button" class="button-secondary" style="padding: 4px 10px; font-size: 11px;">‹</button>
+            <button type="button" class="button" style="padding: 4px 12px; font-size: 11px; background: #3b82f6;">1</button>
+            <button type="button" class="button-secondary" style="padding: 4px 10px; font-size: 11px;">2</button>
+            <button type="button" class="button-secondary" style="padding: 4px 10px; font-size: 11px;">3</button>
+            <button type="button" class="button-secondary" style="padding: 4px 10px; font-size: 11px;">›</button>
+        </div>
+        <div>
+            <span>Rows per page: </span>
+            <select style="padding: 4px 8px; font-size: 11px; background: var(--bg-card); color: var(--text-primary); border: 1px solid var(--border-color); border-radius: 4px;">
+                <option selected>10</option>
+                <option>25</option>
+                <option>50</option>
+            </select>
+        </div>
+    </div>
+</div>
+
+<!-- Drag and Drop & Real-time Scheduling JavaScript -->
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const tbody = document.getElementById('calendarTableBody');
+    if (!tbody) return;
+
+    let draggedRow = null;
+
+    // Table Search filter
+    document.getElementById('tableSearchInput')?.addEventListener('input', function(e) {
+        const query = e.target.value.toLowerCase();
+        document.querySelectorAll('#calendarTableBody tr').forEach(row => {
+            const text = row.textContent.toLowerCase();
+            row.style.display = text.includes(query) ? '' : 'none';
+        });
+    });
+
+    // Attach HTML5 Drag and Drop events to rows
+    function initDragAndDrop() {
+        const rows = tbody.querySelectorAll('.draggable-row');
+        rows.forEach(row => {
+            row.addEventListener('dragstart', handleDragStart);
+            row.addEventListener('dragover', handleDragOver);
+            row.addEventListener('drop', handleDrop);
+            row.addEventListener('dragend', handleDragEnd);
+        });
+        tbody.querySelectorAll('.edit-row-btn').forEach(btn => btn.addEventListener('click', toggleRowEdit));
+        tbody.querySelectorAll('.delete-row-btn').forEach(btn => btn.addEventListener('click', softDeleteRow));
+        tbody.querySelectorAll('.restore-row-btn').forEach(btn => btn.addEventListener('click', restoreRow));
+        tbody.querySelectorAll('.field-last_rolling').forEach(input => input.addEventListener('input', updateCampQtyFromLastRolling));
+    }
+
+    function handleDragStart(e) {
+        draggedRow = this;
+        this.style.opacity = '0.4';
+        this.style.background = 'rgba(59, 130, 246, 0.15)';
+        e.dataTransfer.effectAllowed = 'move';
+        e.dataTransfer.setData('text/plain', this.dataset.rowId);
+    }
+
+    function handleDragOver(e) {
+        e.preventDefault();
+        e.dataTransfer.dropEffect = 'move';
+        const targetRow = this;
+        if (targetRow && targetRow !== draggedRow && targetRow.classList.contains('draggable-row')) {
+            const bounding = targetRow.getBoundingClientRect();
+            const offset = e.clientY - bounding.top - (bounding.height / 2);
+            if (offset > 0) {
+                targetRow.after(draggedRow);
+            } else {
+                targetRow.before(draggedRow);
+            }
+        }
+    }
+
+    function handleDrop(e) {
+        e.preventDefault();
+        reactivateIfMovedAboveInactiveArea(draggedRow);
+        reindexAndRecalculateSchedule();
+        saveSequenceToBackend();
+    }
+
+    function handleDragEnd(e) {
+        this.style.opacity = '1';
+        this.style.removeProperty('background');
+    }
+
+    function reactivateIfMovedAboveInactiveArea(row) {
+        if (!row || (!row.classList.contains('row-below-rule') && !row.classList.contains('row-deleted'))) return;
+        const rows = Array.from(tbody.querySelectorAll('.draggable-row'));
+        const rowIndex = rows.indexOf(row);
+        const hasActiveRowBelow = rows.slice(rowIndex + 1).some(r => !r.classList.contains('row-below-rule'));
+        if (hasActiveRowBelow) {
+            row.classList.remove('row-below-rule', 'row-deleted');
+            row.dataset.deleted = 'false';
+            row.dataset.forcedActive = 'true';
+            updateActionButtons(row);
+        }
+    }
+
+    function toggleRowEdit(e) {
+        const button = e.currentTarget;
+        const row = button.closest('.draggable-row');
+        const enteringEdit = !row.classList.contains('row-editing');
+        row.classList.toggle('row-editing', enteringEdit);
+        row.querySelectorAll('.calendar-field').forEach(input => {
+            input.readOnly = !enteringEdit;
+            if (!enteringEdit && (input.classList.contains('field-start_date') || input.classList.contains('field-end_date'))) {
+                input.dataset.manual = 'true';
+            }
+        });
+        button.textContent = enteringEdit ? '✓' : '✎';
+        button.title = enteringEdit ? 'Save row' : 'Edit row';
+        if (!enteringEdit) {
+            recalculateRowDerivedValues(row);
+            reindexAndRecalculateSchedule();
+            saveSequenceToBackend();
+        } else {
+            row.querySelector('.calendar-field')?.focus();
+        }
+    }
+
+    function softDeleteRow(e) {
+        const row = e.currentTarget.closest('.draggable-row');
+        row.classList.remove('row-editing');
+        row.classList.add('row-below-rule', 'row-deleted');
+        row.dataset.deleted = 'true';
+        row.dataset.forcedActive = 'false';
+        row.querySelectorAll('.calendar-field').forEach(input => input.readOnly = true);
+        updateActionButtons(row);
+        tbody.appendChild(row); // deleted rows sit below the grey inactive rows
+        reindexAndRecalculateSchedule();
+        saveSequenceToBackend();
+    }
+
+    function restoreRow(e) {
+        const row = e.currentTarget.closest('.draggable-row');
+        row.classList.remove('row-deleted');
+        row.dataset.deleted = 'false';
+
+        if (row.dataset.belowRule === 'true' && row.dataset.forcedActive !== 'true') {
+            row.classList.add('row-below-rule');
+            const firstDeleted = tbody.querySelector('.row-deleted');
+            firstDeleted ? firstDeleted.before(row) : tbody.appendChild(row);
+        } else {
+            row.classList.remove('row-below-rule');
+            const firstInactive = tbody.querySelector('.row-below-rule');
+            firstInactive ? firstInactive.before(row) : tbody.appendChild(row);
+        }
+        updateActionButtons(row);
+        reindexAndRecalculateSchedule();
+        saveSequenceToBackend();
+    }
+
+    function updateActionButtons(row) {
+        const deleted = row.dataset.deleted === 'true';
+        const deleteButton = row.querySelector('.delete-row-btn');
+        const restoreButton = row.querySelector('.restore-row-btn');
+        if (deleteButton) deleteButton.hidden = deleted;
+        if (restoreButton) restoreButton.hidden = !deleted;
+    }
+
+    function updateCampQtyFromLastRolling(e) {
+        const row = e.currentTarget.closest('.draggable-row');
+        const baseCampQty = Number(row.dataset.baseCampQty || 0);
+        const enteredValue = e.currentTarget.value.trim();
+        const lastRollingQty = enteredValue === '' ? 0 : Math.max(0, Number(enteredValue) || 0);
+        const campQtyInput = row.querySelector('.field-camp_qty');
+        if (campQtyInput) campQtyInput.value = Math.max(0, Math.round(baseCampQty - lastRollingQty));
+        recalculateRowDerivedValues(row);
+        reindexAndRecalculateSchedule();
+    }
+
+    function recalculateRowDerivedValues(row) {
+        const numberValue = selector => Number(row.querySelector(selector)?.value || 0);
+        const rmQty = numberValue('.field-rm_qty');
+        const rmCast = numberValue('.field-rm_cast');
+        const campQty = numberValue('.field-camp_qty');
+        const actualBtrValue = Number(row.dataset.actualBtr || 0);
+        const actualBtr = Number.isFinite(actualBtrValue) ? Math.max(0, actualBtrValue) : 0;
+        const ph = Number(row.querySelector('.cell-ph')?.textContent?.trim() || 1);
+        const btcCell = row.querySelector('.cell-btc');
+        const rtCell = row.querySelector('.cell-rt');
+        const btrReqCell = row.querySelector('.cell-btr-req');
+        if (btcCell) btcCell.textContent = Math.max(0, Math.round(rmQty - rmCast));
+        if (rtCell) rtCell.textContent = Math.max(1, Math.ceil(campQty / Math.max(1, ph)));
+        if (btrReqCell) {
+            const btrRequired = Math.max(0, campQty - actualBtr);
+            btrReqCell.textContent = Number.isInteger(btrRequired) ? btrRequired : btrRequired.toFixed(1);
+        }
+    }
+
+    // Re-index SEQ. numbers and recalculate continuous timeline dates dynamically
+    function reindexAndRecalculateSchedule() {
+        const rows = tbody.querySelectorAll('.draggable-row');
+        let currentStart = new Date(2026, 8, 18, 9, 0, 0); // 18-09-2026 09:00 AM
+        const lastSpecial = {};
+
+        rows.forEach((row, idx) => {
+            const seqCell = row.querySelector('.cell-seq');
+            if (seqCell) seqCell.textContent = idx + 1;
+
+            const rtCell = row.querySelector('.cell-rt');
+            const rtHours = parseInt(rtCell?.textContent?.trim() || '12', 10);
+
+            const startInput = row.querySelector('.field-start_date');
+            const endInput = row.querySelector('.field-end_date');
+            const reqCell = row.querySelector('.cell-casting-req');
+
+            const manualStart = startInput?.dataset.manual === 'true' ? new Date(startInput.value) : null;
+            let rowStart = manualStart && !isNaN(manualStart) ? manualStart : currentStart;
+            if (rowStart < currentStart) rowStart = currentStart;
+
+            const special = getSpecialGapRule(row.dataset.section);
+            let insertedGapHours = 0;
+            const previous = special.group ? lastSpecial[special.group] : null;
+            if (previous && previous.member !== special.member) {
+                const minimumStart = new Date(previous.end.getTime() + (special.gapHours * 60 * 60 * 1000));
+                if (rowStart < minimumStart) {
+                    insertedGapHours = Math.ceil((minimumStart - rowStart) / (60 * 60 * 1000));
+                    rowStart = minimumStart;
+                }
+            }
+            const manualEnd = endInput?.dataset.manual === 'true' ? new Date(endInput.value) : null;
+            const endDt = manualEnd && !isNaN(manualEnd) && manualEnd > rowStart
+                ? manualEnd
+                : new Date(rowStart.getTime() + (rtHours * 60 * 60 * 1000));
+            const reqDt = idx === 0
+                ? new Date(rowStart.getTime() - (8.25 * 60 * 60 * 1000))
+                : new Date(rowStart.getTime() - (8 * 60 * 60 * 1000));
+
+            if (startInput) startInput.value = formatDateInput(rowStart);
+            if (endInput) endInput.value = formatDateInput(endDt);
+            if (reqCell) reqCell.textContent = formatDateFmt(reqDt);
+
+            const delayCell = row.querySelector('.cell-delay');
+            if (delayCell) {
+                delayCell.textContent = insertedGapHours || (idx < 2 ? "" : "3");
+            }
+
+            currentStart = endDt;
+            if (special.group) lastSpecial[special.group] = {member: special.member, end: endDt};
+        });
+    }
+
+    function getSpecialGapRule(section) {
+        const normalized = String(section || '').toUpperCase().replace(/[^A-Z0-9]/g, '');
+        if (normalized.includes('RAIL60E1') && normalized.includes('1080HH')) return {group: 'rail_pair', member: '1080HH', gapHours: 72};
+        if (normalized.includes('RAIL60E1') && normalized.includes('R260')) return {group: 'rail_pair', member: 'R260', gapHours: 72};
+        if (normalized.startsWith('AL') || normalized.includes('AL250X250')) return {group: 'al_sheet_pair', member: 'AL', gapHours: 120};
+        if (normalized.includes('SHEETPILE')) return {group: 'al_sheet_pair', member: 'SHEET_PILES', gapHours: 120};
+        return {group: null, member: null, gapHours: 0};
+    }
+
+    function formatDateFmt(dt) {
+        const day = String(dt.getDate()).padStart(2, '0');
+        const month = String(dt.getMonth() + 1).padStart(2, '0');
+        let hours = dt.getHours();
+        const minutes = String(dt.getMinutes()).padStart(2, '0');
+        const ampm = hours >= 12 ? 'PM' : 'AM';
+        hours = hours % 12;
+        hours = hours ? hours : 12;
+        const hoursStr = String(hours).padStart(2, '0');
+        return `${day}-${month} | ${hoursStr}:${minutes} ${ampm} |`;
+    }
+
+    function formatDateInput(dt) {
+        const year = dt.getFullYear();
+        const month = String(dt.getMonth() + 1).padStart(2, '0');
+        const day = String(dt.getDate()).padStart(2, '0');
+        const hours = String(dt.getHours()).padStart(2, '0');
+        const minutes = String(dt.getMinutes()).padStart(2, '0');
+        return `${year}-${month}-${day}T${hours}:${minutes}`;
+    }
+
+    // Send updated sequence to Django backend session
+    function saveSequenceToBackend() {
+        const rows = tbody.querySelectorAll('.draggable-row');
+        const sequence = Array.from(rows).map(r => r.dataset.rowId);
+        const overrides = {};
+        const deletedIds = [];
+
+        rows.forEach(row => {
+            const value = selector => row.querySelector(selector)?.value ?? '';
+            overrides[row.dataset.rowId] = {
+                rm_qty: value('.field-rm_qty'),
+                rm_cast: value('.field-rm_cast'),
+                camp_qty: value('.field-camp_qty'),
+                last_rolling: value('.field-last_rolling'),
+                start_date: value('.field-start_date'),
+                end_date: value('.field-end_date'),
+                is_forced_active: row.dataset.forcedActive === 'true'
+            };
+            if (row.dataset.deleted === 'true') deletedIds.push(row.dataset.rowId);
+        });
+
+        fetch("{% url 'btr_save_calendar_sequence' %}", {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': getCookie('csrftoken')
+            },
+            body: JSON.stringify({ sequence: sequence, overrides: overrides, deleted_ids: deletedIds })
+        }).catch(err => console.log('Sequence save background status:', err));
+    }
+
+    function getCookie(name) {
+        let cookieValue = null;
+        if (document.cookie && document.cookie !== '') {
+            const cookies = document.cookie.split(';');
+            for (let i = 0; i < cookies.length; i++) {
+                const cookie = cookies[i].trim();
+                if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                    cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                    break;
+                }
+            }
+        }
+        return cookieValue;
+    }
+
+    initDragAndDrop();
+});
+</script>
+{% endblock %}

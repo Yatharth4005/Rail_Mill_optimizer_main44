@@ -1,0 +1,352 @@
+{% extends 'casting_plan/base.html' %}
+{% load static %}
+
+{% block page_title %}Roll Shop Sequence — Arrange the sequence for Rolling Plan{% endblock %}
+{% block page_subtitle %}{% endblock %}
+
+{% block content %}
+<!-- Workflow Stepper Header (8 Steps) -->
+<div class="step-tracker-bar">
+    <a href="{% url 'btr_input' %}" class="step-item completed">
+        <span class="step-num">✓</span>
+        <span>BTR Input</span>
+    </a>
+    <span class="step-divider">—</span>
+    <a href="{% url 'btr_rolling_calendar' %}" class="step-item completed">
+        <span class="step-num">✓</span>
+        <span>Upload Rolling Calendar</span>
+    </a>
+    <span class="step-divider">—</span>
+    <a href="{% url 'btr_planning_material' %}" class="step-item completed">
+        <span class="step-num">✓</span>
+        <span>Planning Material</span>
+    </a>
+    <span class="step-divider">—</span>
+    <a href="{% url 'btr_camp_plan' %}" class="step-item completed">
+        <span class="step-num">✓</span>
+        <span>Camp Plan</span>
+    </a>
+    <span class="step-divider">—</span>
+    <a href="{% url 'create_casting_plan' %}" class="step-item completed">
+        <span class="step-num">✓</span>
+        <span>Casting Plan</span>
+    </a>
+    <span class="step-divider">—</span>
+    <a href="{% url 'btr_embossing_plan' %}" class="step-item completed">
+        <span class="step-num">✓</span>
+        <span>Campaign Summary</span>
+    </a>
+    <span class="step-divider">—</span>
+    <a href="{% url 'btr_roll_shop_sequence' %}" class="step-item active">
+        <span class="step-num">7</span>
+        <span>Roll Shop Sequence</span>
+    </a>
+    <span class="step-divider">—</span>
+    <a href="{% url 'btr_rolling_plan' %}" class="step-item">
+        <span class="step-num">8</span>
+        <span>Rolling Plan</span>
+    </a>
+</div>
+
+<!-- Top Four Summary Cards -->
+<div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; margin-bottom: 20px;">
+    <div style="background: var(--bg-card); border: 1px solid var(--border-color); border-radius: var(--radius-md); padding: 14px 18px; display: flex; align-items: center; gap: 14px;">
+        <div style="width: 36px; height: 36px; border-radius: 8px; background: rgba(59, 130, 246, 0.15); color: #3b82f6; display: flex; align-items: center; justify-content: center; font-size: 16px;">📄</div>
+        <div>
+            <div style="font-size: 10px; font-weight: 700; color: var(--text-secondary); text-transform: uppercase;">CAMPAIGN</div>
+            <div style="font-size: 16px; font-weight: 800; color: var(--text-primary); margin-top: 2px;">{{ planning_material|default:"AL_250X250" }}</div>
+        </div>
+    </div>
+    <div style="background: var(--bg-card); border: 1px solid var(--border-color); border-radius: var(--radius-md); padding: 14px 18px; display: flex; align-items: center; gap: 14px;">
+        <div style="width: 36px; height: 36px; border-radius: 8px; background: rgba(59, 130, 246, 0.15); color: #3b82f6; display: flex; align-items: center; justify-content: center; font-size: 16px;">📊</div>
+        <div>
+            <div style="font-size: 10px; font-weight: 700; color: var(--text-secondary); text-transform: uppercase;">TOTAL RECORDS</div>
+            <div style="font-size: 16px; font-weight: 800; color: var(--text-primary); margin-top: 2px;">{{ total_records|default:18 }}</div>
+        </div>
+    </div>
+    <div style="background: var(--bg-card); border: 1px solid var(--border-color); border-radius: var(--radius-md); padding: 14px 18px; display: flex; align-items: center; gap: 14px;">
+        <div style="width: 36px; height: 36px; border-radius: 8px; background: rgba(16, 185, 129, 0.15); color: #10b981; display: flex; align-items: center; justify-content: center; font-size: 16px;">✏️</div>
+        <div>
+            <div style="font-size: 10px; font-weight: 700; color: var(--text-secondary); text-transform: uppercase;">DIMENSION RANGE</div>
+            <div style="font-size: 16px; font-weight: 800; color: var(--text-primary); margin-top: 2px;">{{ thickness_range|default:"6 – 128 mm" }}</div>
+        </div>
+    </div>
+    <div style="background: var(--bg-card); border: 1px solid var(--border-color); border-radius: var(--radius-md); padding: 14px 18px; display: flex; align-items: center; gap: 14px;">
+        <div style="width: 36px; height: 36px; border-radius: 8px; background: rgba(255, 122, 0, 0.15); color: #ff7a00; display: flex; align-items: center; justify-content: center; font-size: 16px;">⚖️</div>
+        <div>
+            <div style="font-size: 10px; font-weight: 700; color: var(--text-secondary); text-transform: uppercase;">TOTAL TONNAGE</div>
+            <div style="font-size: 16px; font-weight: 800; color: var(--text-primary); margin-top: 2px;">{{ total_tonnage|default:"6498" }} MT</div>
+        </div>
+    </div>
+</div>
+
+<!-- Info Alert Banner -->
+<div style="background: rgba(255, 122, 0, 0.12); border: 1px solid rgba(255, 122, 0, 0.35); border-radius: var(--radius-md); padding: 12px 18px; margin-bottom: 20px; display: flex; align-items: center; gap: 10px; color: #ff8c00; font-size: 12.5px;">
+    <span style="font-size: 16px; font-weight: 800;">ℹ</span>
+    <span>Arrange the sequence of plates/rolls as per Roll Shop planning. You can drag and drop rows or directly edit the sequence number.</span>
+</div>
+
+<!-- Main Split Container (70% Left Table / 30% Right Sidebar) -->
+<div style="display: grid; grid-template-columns: 1fr 320px; gap: 20px; align-items: start;">
+    
+    <!-- Left Column: Table Container -->
+    <div class="panel" style="margin-bottom: 0;">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; flex-wrap: wrap; gap: 12px;">
+            <div style="display: flex; align-items: center; gap: 8px;">
+                <span style="color: #ff7500; font-size: 16px;">🛠️</span>
+                <h2 style="margin: 0; font-size: 13px; font-weight: 800; color: var(--text-primary); text-transform: uppercase; letter-spacing: 0.5px;">
+                    ROLL SHOP SEQUENCE ({{ total_records|default:18 }} RECORDS)
+                </h2>
+            </div>
+
+            <div style="display: flex; gap: 10px; align-items: center;">
+                <input type="text" id="rollShopSearch" placeholder="Search Planning Mat, Sec Wt, Grade group..." class="search-input" style="width: 230px; padding: 6px 12px; font-size: 12px;">
+                <button type="button" onclick="resetSequence()" class="button-secondary" style="padding: 6px 12px; font-size: 12px;">
+                    🔄 Reset
+                </button>
+                <button type="button" onclick="exportTableToExcel()" class="button-secondary" style="padding: 6px 12px; font-size: 12px;">
+                    📊 Export Excel
+                </button>
+            </div>
+        </div>
+
+        <div style="overflow-y: auto; max-height: 520px; border: 1px solid var(--border-color); border-radius: 8px;">
+            <table id="rollShopTable" style="margin-bottom: 0;">
+                <thead style="position: sticky; top: 0; z-index: 10; background: var(--table-header-bg);">
+                    <tr>
+                        <th style="width: 36px; text-align: center;"></th>
+                        <th style="width: 90px;">SEQ. NO.</th>
+                        <th>PLANNING MAT</th>
+                        <th>SEC WT</th>
+                        <th>GRADE GROUP</th>
+                        <th style="text-align: right;">TOTAL</th>
+                    </tr>
+                </thead>
+                <tbody id="sortableBody">
+                    {% if sequence_rows %}
+                        {% for r in sequence_rows %}
+                        <tr class="draggable-row" draggable="true" data-index="{{ forloop.counter0 }}">
+                            <td style="text-align: center; color: var(--text-muted); cursor: grab; font-weight: 800;">:::</td>
+                            <td>
+                                <input type="number" class="seq-input input-field" value="{{ r.seq_no|default:forloop.counter }}" style="width: 60px; padding: 3px 6px; font-size: 11.5px; font-weight: 700; text-align: center;">
+                            </td>
+                            <td><strong>{{ r.planning_mat|default:planning_material }}</strong></td>
+                            <td>{{ r.sec_wt }}</td>
+                            <td><span class="record-badge badge-records-orange">{{ r.grade_group }}</span></td>
+                            <td style="text-align: right; font-weight: 700;">{{ r.total }}</td>
+                        </tr>
+                        {% endfor %}
+                    {% else %}
+                        <tr class="draggable-row" draggable="true"><td style="text-align: center; color: var(--text-muted); cursor: grab;">:::</td><td><input type="number" class="seq-input input-field" value="1" style="width: 60px; padding: 3px 6px; text-align: center;"></td><td><strong>AL_250X250</strong></td><td>75.3</td><td><span class="record-badge badge-records-orange">G5-E450_S460_GR65</span></td><td style="text-align: right; font-weight: 700;">2650</td></tr>
+                        <tr class="draggable-row" draggable="true"><td style="text-align: center; color: var(--text-muted); cursor: grab;">:::</td><td><input type="number" class="seq-input input-field" value="2" style="width: 60px; padding: 3px 6px; text-align: center;"></td><td><strong>AL_250X250</strong></td><td>75.6</td><td><span class="record-badge badge-records-orange">G2-HT</span></td><td style="text-align: right; font-weight: 700;">10</td></tr>
+                        <tr class="draggable-row" draggable="true"><td style="text-align: center; color: var(--text-muted); cursor: grab;">:::</td><td><input type="number" class="seq-input input-field" value="3" style="width: 60px; padding: 3px 6px; text-align: center;"></td><td><strong>AL_250X250</strong></td><td>82.5</td><td><span class="record-badge badge-records-orange">G2-HT</span></td><td style="text-align: right; font-weight: 700;">667</td></tr>
+                        <tr class="draggable-row" draggable="true"><td style="text-align: center; color: var(--text-muted); cursor: grab;">:::</td><td><input type="number" class="seq-input input-field" value="4" style="width: 60px; padding: 3px 6px; text-align: center;"></td><td><strong>AL_250X250</strong></td><td>86.1</td><td><span class="record-badge badge-records-orange">G5-E450_S460_GR65</span></td><td style="text-align: right; font-weight: 700;">1084</td></tr>
+                        <tr class="draggable-row" draggable="true"><td style="text-align: center; color: var(--text-muted); cursor: grab;">:::</td><td><input type="number" class="seq-input input-field" value="5" style="width: 60px; padding: 3px 6px; text-align: center;"></td><td><strong>AL_250X250</strong></td><td>89.7</td><td><span class="record-badge badge-records-orange">G2-HT</span></td><td style="text-align: right; font-weight: 700;">130</td></tr>
+                        <tr class="draggable-row" draggable="true"><td style="text-align: center; color: var(--text-muted); cursor: grab;">:::</td><td><input type="number" class="seq-input input-field" value="6" style="width: 60px; padding: 3px 6px; text-align: center;"></td><td><strong>AL_250X250</strong></td><td>93.2</td><td><span class="record-badge badge-records-orange">G2-HT</span></td><td style="text-align: right; font-weight: 700;">314</td></tr>
+                        <tr class="draggable-row" draggable="true"><td style="text-align: center; color: var(--text-muted); cursor: grab;">:::</td><td><input type="number" class="seq-input input-field" value="7" style="width: 60px; padding: 3px 6px; text-align: center;"></td><td><strong>AL_250X250</strong></td><td>93.2</td><td><span class="record-badge badge-records-orange">G5-E450_S460_GR65</span></td><td style="text-align: right; font-weight: 700;">226</td></tr>
+                        <tr class="draggable-row" draggable="true"><td style="text-align: center; color: var(--text-muted); cursor: grab;">:::</td><td><input type="number" class="seq-input input-field" value="8" style="width: 60px; padding: 3px 6px; text-align: center;"></td><td><strong>AL_250X250</strong></td><td>96.7</td><td><span class="record-badge badge-records-orange">G2-HT</span></td><td style="text-align: right; font-weight: 700;">23</td></tr>
+                        <tr class="draggable-row" draggable="true"><td style="text-align: center; color: var(--text-muted); cursor: grab;">:::</td><td><input type="number" class="seq-input input-field" value="9" style="width: 60px; padding: 3px 6px; text-align: center;"></td><td><strong>AL_250X250</strong></td><td>104</td><td><span class="record-badge badge-records-orange">G2-HT</span></td><td style="text-align: right; font-weight: 700;">401</td></tr>
+                        <tr class="draggable-row" draggable="true"><td style="text-align: center; color: var(--text-muted); cursor: grab;">:::</td><td><input type="number" class="seq-input input-field" value="10" style="width: 60px; padding: 3px 6px; text-align: center;"></td><td><strong>AL_250X250</strong></td><td>107</td><td><span class="record-badge badge-records-orange">G2-HT</span></td><td style="text-align: right; font-weight: 700;">67</td></tr>
+                        <tr class="draggable-row" draggable="true"><td style="text-align: center; color: var(--text-muted); cursor: grab;">:::</td><td><input type="number" class="seq-input input-field" value="11" style="width: 60px; padding: 3px 6px; text-align: center;"></td><td><strong>AL_250X250</strong></td><td>111</td><td><span class="record-badge badge-records-orange">G2-HT</span></td><td style="text-align: right; font-weight: 700;">30</td></tr>
+                        <tr class="draggable-row" draggable="true"><td style="text-align: center; color: var(--text-muted); cursor: grab;">:::</td><td><input type="number" class="seq-input input-field" value="12" style="width: 60px; padding: 3px 6px; text-align: center;"></td><td><strong>AL_250X250</strong></td><td>114</td><td><span class="record-badge badge-records-orange">G2-HT</span></td><td style="text-align: right; font-weight: 700;">153</td></tr>
+                        <tr class="draggable-row" draggable="true"><td style="text-align: center; color: var(--text-muted); cursor: grab;">:::</td><td><input type="number" class="seq-input input-field" value="13" style="width: 60px; padding: 3px 6px; text-align: center;"></td><td><strong>AL_250X250</strong></td><td>118</td><td><span class="record-badge badge-records-orange">G2-HT</span></td><td style="text-align: right; font-weight: 700;">368</td></tr>
+                        <tr class="draggable-row" draggable="true"><td style="text-align: center; color: var(--text-muted); cursor: grab;">:::</td><td><input type="number" class="seq-input input-field" value="14" style="width: 60px; padding: 3px 6px; text-align: center;"></td><td><strong>AL_250X250</strong></td><td>128</td><td><span class="record-badge badge-records-orange">G2-HT</span></td><td style="text-align: right; font-weight: 700;">353</td></tr>
+                        <tr class="draggable-row" draggable="true"><td style="text-align: center; color: var(--text-muted); cursor: grab;">:::</td><td><input type="number" class="seq-input input-field" value="15" style="width: 60px; padding: 3px 6px; text-align: center;"></td><td><strong>AL_250X250</strong></td><td>128</td><td><span class="record-badge badge-records-orange">G3-EA10_SS540_GR60</span></td><td style="text-align: right; font-weight: 700;">23</td></tr>
+                    {% endif %}
+                </tbody>
+                <tfoot>
+                    <tr style="background: rgba(255, 117, 0, 0.15); font-weight: 800; color: var(--text-primary); border-top: 2px solid #ff7500;">
+                        <td colspan="5" style="font-weight: 800; font-size: 13px;">Grand Total</td>
+                        <td style="text-align: right; font-weight: 800; font-size: 14px; color: #ff7500;">{{ total_tonnage|default:"6498" }}</td>
+                    </tr>
+                </tfoot>
+            </table>
+        </div>
+
+        <div style="font-size: 11.5px; color: var(--text-secondary); margin-top: 10px;">
+            Total Records: {{ total_records|default:18 }}
+        </div>
+    </div>
+
+    <!-- Right Sidebar -->
+    <div style="display: flex; flex-direction: column; gap: 16px;">
+        
+        <!-- Instructions Card -->
+        <div style="background: var(--bg-card); border: 1px solid var(--border-color); border-radius: var(--radius-lg); padding: 18px;">
+            <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 12px; color: #3b82f6;">
+                <span style="font-size: 16px; font-weight: 800;">ℹ</span>
+                <h3 style="margin: 0; font-size: 12px; font-weight: 800; color: var(--text-primary); text-transform: uppercase;">INSTRUCTIONS</h3>
+            </div>
+            <ol style="margin: 0; padding-left: 16px; font-size: 11.5px; color: var(--text-secondary); line-height: 1.6;">
+                <li style="margin-bottom: 6px;">Arrange the sequence by dragging and dropping the rows.</li>
+                <li style="margin-bottom: 6px;">You can also manually edit the sequence number.</li>
+                <li style="margin-bottom: 6px;">Ensure all records are arranged as per Roll Shop planning.</li>
+                <li style="margin-bottom: 6px;">Click on "Submit to User &amp; Continue to Rolling Plan" after finalizing the sequence.</li>
+                <li>Use "Reset" to revert to the original sequence.</li>
+            </ol>
+        </div>
+
+        <!-- Note Card -->
+        <div style="background: var(--bg-card); border: 1px solid var(--border-color); border-radius: var(--radius-lg); padding: 18px;">
+            <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 10px; color: #38bdf8;">
+                <span style="font-size: 16px;">📢</span>
+                <h3 style="margin: 0; font-size: 12px; font-weight: 800; color: var(--text-primary); text-transform: uppercase;">NOTE</h3>
+            </div>
+            <ul style="margin: 0; padding-left: 16px; font-size: 11.5px; color: var(--text-secondary); line-height: 1.6;">
+                <li style="margin-bottom: 6px;">All records must have a unique sequence number.</li>
+                <li style="margin-bottom: 6px;">Please verify section weight, grade group and total tonnage.</li>
+                <li>Use drag and drop (::: ) to change the order.</li>
+            </ul>
+        </div>
+
+        <!-- Submit Sequence Card -->
+        <div style="background: var(--bg-card); border: 1px solid var(--border-color); border-radius: var(--radius-lg); padding: 18px;">
+            <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 8px; color: #ff7500;">
+                <span style="font-size: 16px;">🚀</span>
+                <h3 style="margin: 0; font-size: 13px; font-weight: 800; color: var(--text-primary); text-transform: uppercase;">SUBMIT SEQUENCE</h3>
+            </div>
+            <p style="font-size: 11px; color: var(--text-secondary); line-height: 1.45; margin-bottom: 16px;">
+                Once submitted, the sequence will be sent to the user and you will be redirected to the Rolling Plan page.
+            </p>
+
+            <form action="{% url 'btr_roll_shop_submit' %}" method="POST" id="submitSequenceForm">
+                {% csrf_token %}
+                <input type="hidden" name="planning_material" value="{{ planning_material }}">
+                <input type="hidden" name="sequence_data" id="sequenceDataInput">
+                
+                <button type="submit" class="button" style="width: 100%; padding: 10px; font-size: 12px; background: linear-gradient(135deg, #ff7a00 0%, #ff5500 100%); font-weight: 700; margin-bottom: 10px; justify-content: center;">
+                    Submit to User &amp; Continue to Rolling Plan →
+                </button>
+                <a href="{% url 'btr_embossing_plan' %}?mat={{ planning_material|urlencode }}" class="button-secondary" style="width: 100%; padding: 8px; font-size: 12px; justify-content: center; text-decoration: none; display: inline-flex;">
+                    Cancel
+                </a>
+            </form>
+        </div>
+
+    </div>
+</div>
+
+<!-- Bottom Action Bar -->
+<div style="display: flex; justify-content: space-between; align-items: center; margin-top: 24px; padding-top: 16px; border-top: 1px solid var(--border-color);">
+    <a href="{% url 'btr_embossing_plan' %}?mat={{ planning_material|urlencode }}" class="button-secondary" style="padding: 10px 20px; font-size: 13px; text-decoration: none;">
+        ← Back to Campaign Summary
+    </a>
+</div>
+
+<!-- JavaScript for Drag-and-Drop, Sequence Updating & Search -->
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const tbody = document.getElementById('sortableBody');
+        let dragSrcEl = null;
+
+        // Initialize drag events on rows
+        function initDragRow(row) {
+            row.addEventListener('dragstart', function(e) {
+                dragSrcEl = this;
+                e.dataTransfer.effectAllowed = 'move';
+                this.style.opacity = '0.5';
+            });
+
+            row.addEventListener('dragover', function(e) {
+                if (e.preventDefault) e.preventDefault();
+                e.dataTransfer.dropEffect = 'move';
+                return false;
+            });
+
+            row.addEventListener('drop', function(e) {
+                if (e.stopPropagation) e.stopPropagation();
+                if (dragSrcEl !== this) {
+                    const rows = Array.from(tbody.querySelectorAll('tr'));
+                    const srcIndex = rows.indexOf(dragSrcEl);
+                    const targetIndex = rows.indexOf(this);
+
+                    if (srcIndex < targetIndex) {
+                        tbody.insertBefore(dragSrcEl, this.nextSibling);
+                    } else {
+                        tbody.insertBefore(dragSrcEl, this);
+                    }
+                    updateSequenceNumbers();
+                }
+                return false;
+            });
+
+            row.addEventListener('dragend', function() {
+                this.style.opacity = '1';
+            });
+        }
+
+        tbody.querySelectorAll('tr').forEach(initDragRow);
+
+        // Update sequence numbers sequentially
+        function updateSequenceNumbers() {
+            tbody.querySelectorAll('tr').forEach((row, index) => {
+                const input = row.querySelector('.seq-input');
+                if (input) input.value = index + 1;
+            });
+        }
+
+        // Manual edit of sequence inputs
+        tbody.addEventListener('input', function(e) {
+            if (e.target.classList.contains('seq-input')) {
+                const targetVal = parseInt(e.target.value, 10);
+                if (isNaN(targetVal) || targetVal < 1) return;
+
+                const rows = Array.from(tbody.querySelectorAll('tr'));
+                const currentRow = e.target.closest('tr');
+                const clampedIndex = Math.min(Math.max(targetVal - 1, 0), rows.length - 1);
+
+                if (clampedIndex < rows.indexOf(currentRow)) {
+                    tbody.insertBefore(currentRow, rows[clampedIndex]);
+                } else if (clampedIndex > rows.indexOf(currentRow)) {
+                    tbody.insertBefore(currentRow, rows[clampedIndex].nextSibling);
+                }
+                updateSequenceNumbers();
+            }
+        });
+
+        // Search Filter
+        document.getElementById('rollShopSearch')?.addEventListener('input', function(e) {
+            const query = e.target.value.toLowerCase().trim();
+            tbody.querySelectorAll('tr').forEach(row => {
+                row.style.display = row.textContent.toLowerCase().includes(query) ? 'table-row' : 'none';
+            });
+        });
+
+        // Form Submit Handler
+        document.getElementById('submitSequenceForm')?.addEventListener('submit', function(e) {
+            const rowData = [];
+            tbody.querySelectorAll('tr').forEach((row, index) => {
+                const seq = row.querySelector('.seq-input')?.value || (index + 1);
+                const cells = row.querySelectorAll('td');
+                if (cells.length >= 6) {
+                    rowData.push({
+                        seq_no: seq,
+                        planning_mat: cells[2].textContent.trim(),
+                        sec_wt: cells[3].textContent.trim(),
+                        grade_group: cells[4].textContent.trim(),
+                        total: cells[5].textContent.trim(),
+                        thickness: cells[3].textContent.trim(),
+                        std: cells[4].textContent.trim(),
+                        tonnage: cells[5].textContent.trim(),
+                    });
+                }
+            });
+            document.getElementById('sequenceDataInput').value = JSON.stringify(rowData);
+        });
+    });
+
+    function resetSequence() {
+        window.location.href = "{% url 'btr_roll_shop_sequence' %}?mat={{ planning_material|urlencode }}&reset=1";
+    }
+
+    function exportTableToExcel() {
+        let table = document.getElementById("rollShopTable");
+        let html = table.outerHTML;
+        let url = 'data:application/vnd.ms-excel,' + encodeURIComponent(html);
+        let link = document.createElement('a');
+        link.download = 'Roll_Shop_Sequence.xls';
+        link.href = url;
+        link.click();
+    }
+</script>
+{% endblock %}

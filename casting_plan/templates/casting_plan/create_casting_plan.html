@@ -1,0 +1,278 @@
+{% extends 'casting_plan/base.html' %}
+{% load static %}
+
+{% block page_title %}Casting Plan Ready — Auto-Generated Casting Schedule & Bloom Calculation{% endblock %}
+{% block page_subtitle %}{% endblock %}
+
+{% block content %}
+<!-- Workflow Stepper Header (8 Steps) -->
+<div class="step-tracker-bar">
+    <a href="{% url 'btr_input' %}" class="step-item completed">
+        <span class="step-num">✓</span>
+        <span>BTR Input</span>
+    </a>
+    <span class="step-divider">—</span>
+    <a href="{% url 'btr_rolling_calendar' %}" class="step-item completed">
+        <span class="step-num">✓</span>
+        <span>Upload Rolling Calendar</span>
+    </a>
+    <span class="step-divider">—</span>
+    <a href="{% url 'btr_planning_material' %}" class="step-item completed">
+        <span class="step-num">✓</span>
+        <span>Planning Material</span>
+    </a>
+    <span class="step-divider">—</span>
+    <a href="{% url 'btr_camp_plan' %}" class="step-item completed">
+        <span class="step-num">✓</span>
+        <span>Camp Plan</span>
+    </a>
+    <span class="step-divider">—</span>
+    <a href="{% url 'create_casting_plan' %}" class="step-item active">
+        <span class="step-num">5</span>
+        <span>Casting Plan</span>
+    </a>
+    <span class="step-divider">—</span>
+    <a href="{% url 'btr_embossing_plan' %}" class="step-item">
+        <span class="step-num">6</span>
+        <span>Campaign Summary</span>
+    </a>
+    <span class="step-divider">—</span>
+    <a href="{% url 'btr_roll_shop_sequence' %}" class="step-item">
+        <span class="step-num">7</span>
+        <span>Roll Shop Sequence</span>
+    </a>
+    <span class="step-divider">—</span>
+    <a href="{% url 'btr_rolling_plan' %}" class="step-item">
+        <span class="step-num">8</span>
+        <span>Rolling Plan</span>
+    </a>
+</div>
+
+<div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 20px; flex-wrap: wrap; gap: 14px;">
+    <div>
+        <div style="font-size: 11px; letter-spacing: 1.5px; font-weight: 800; color: #3b82f6; text-transform: uppercase; margin-bottom: 4px;">
+            STEP 5 OF 8 — CASTING PLAN
+        </div>
+        <h1 style="font-size: 24px; font-weight: 800; color: var(--text-primary); margin-bottom: 4px;">Casting Plan Ready</h1>
+        <p style="font-size: 13px; color: var(--text-secondary);">Auto-generated casting plan workbook based on active Camp Plan dataset, section parameters &amp; bloom calculation matrix.</p>
+    </div>
+    <a href="{% url 'btr_embossing_plan' %}?mat={{ planning_material|urlencode }}" class="button" style="background: linear-gradient(135deg, #ff7a00 0%, #ff5500 100%); color: #ffffff; padding: 10px 22px; font-size: 13.5px; font-weight: 700; border-radius: 8px; box-shadow: 0 4px 15px rgba(255, 122, 0, 0.35); text-decoration: none; display: inline-flex; align-items: center; gap: 8px;">
+        <span>Proceed to Step 6: Campaign Summary</span>
+        <span>→</span>
+    </a>
+</div>
+
+<!-- Generation Card -->
+<div class="panel" style="margin-bottom: 24px;">
+    <h2 style="font-size: 13px; font-weight: 800; color: var(--text-primary); letter-spacing: 0.5px; margin-top: 0; margin-bottom: 16px; text-transform: uppercase;">GENERATE CASTING PLAN WORKBOOK</h2>
+    <form action="{% url 'btr_casting_plan_generate' %}" method="POST" style="display: flex; gap: 16px; align-items: flex-end; flex-wrap: wrap;">
+        {% csrf_token %}
+        <div style="flex: 1; min-width: 220px;">
+            <label style="font-size: 11px; font-weight: 700; color: var(--text-secondary); text-transform: uppercase; margin-bottom: 6px; display: block;">Planning Material *</label>
+            <input type="text" name="planning_material" value="{{ planning_material|default:'UC_356_X_406' }}" class="input-field" required style="width: 100%; font-weight: 700;">
+        </div>
+        <div style="flex: 1; min-width: 180px;">
+            <label style="font-size: 11px; font-weight: 700; color: var(--text-secondary); text-transform: uppercase; margin-bottom: 6px; display: block;">Plan Date *</label>
+            <input type="date" name="plan_date" value="{{ today }}" class="input-field" required style="width: 100%;">
+        </div>
+        <div style="display: flex; gap: 12px; align-items: center; flex-wrap: wrap;">
+            <button type="submit" class="button" style="padding: 11px 24px; border-radius: var(--radius-md); font-weight: 700; background: linear-gradient(135deg, #059669 0%, #10b981 100%); border: none; color: #ffffff;">⚡ Generate Casting Plan →</button>
+            <a href="{% url 'btr_embossing_plan' %}?mat={{ planning_material|urlencode }}" class="button" style="padding: 11px 24px; border-radius: var(--radius-md); font-weight: 700; background: linear-gradient(135deg, #ff7a00 0%, #ff5500 100%); border: none; color: #ffffff; text-decoration: none; display: inline-flex; align-items: center; gap: 6px;">Proceed to Step 5: Campaign Summary →</a>
+        </div>
+    </form>
+</div>
+
+<!-- History Table Card -->
+<div class="panel">
+    <h2 style="font-size: 13px; font-weight: 800; color: var(--text-primary); letter-spacing: 0.5px; margin-top: 0; margin-bottom: 16px; text-transform: uppercase;">CASTING PLAN HISTORY &amp; DOWNLOADS</h2>
+    <div style="overflow-x: auto;">
+        <table>
+            <thead>
+                <tr>
+                    <th>PLANNING MATERIAL</th>
+                    <th>CREATED AT</th>
+                    <th>FILE SIZE</th>
+                    <th style="text-align: right;">ACTION</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% if history_items %}
+                    {% for h in history_items %}
+                    <tr>
+                        <td><strong style="color: #ff7500; font-weight: 700;">{{ h.planning_mat }}</strong></td>
+                        <td>{{ h.created_at_fmt }}</td>
+                        <td>{{ h.file_size_kb }} KB</td>
+                        <td style="text-align: right; white-space: nowrap;">
+                            <div style="display: flex; gap: 8px; justify-content: flex-end; align-items: center;">
+                                {% if h.filename %}
+                                <!-- Preview Button -->
+                                <button type="button" onclick="previewCastingPlan('{{ h.filename }}')" class="button-secondary" style="padding: 5px 11px; font-size: 11.5px; border-radius: 6px; background: rgba(59, 130, 246, 0.12); color: #3b82f6; border: 1px solid rgba(59, 130, 246, 0.3); font-weight: 600; cursor: pointer;">
+                                    👁 View Preview
+                                </button>
+
+                                <!-- Download Button -->
+                                <a href="{% url 'btr_casting_plan_download_file' h.filename %}" class="button-secondary" style="padding: 5px 11px; font-size: 11.5px; border-radius: 6px; font-weight: 600; text-decoration: none;">
+                                    ⬇ Download .xlsx
+                                </a>
+
+                                <!-- Delete Button -->
+                                <a href="{% url 'btr_casting_plan_delete' h.filename %}" onclick="return confirm('Are you sure you want to delete this casting plan file?');" class="button-secondary" style="padding: 5px 11px; font-size: 11.5px; border-radius: 6px; color: var(--danger); border-color: rgba(239, 68, 68, 0.35); background: rgba(239, 68, 68, 0.08); font-weight: 600; text-decoration: none;">
+                                    🗑 Delete
+                                </a>
+                                {% else %}
+                                <span style="font-size: 11px; color: var(--text-muted);">No File Available</span>
+                                {% endif %}
+                            </div>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                {% else %}
+                    <tr>
+                        <td colspan="4" style="text-align: center; padding: 32px; color: var(--text-muted);">
+                            No casting plans generated yet. Click "Generate Casting Plan" above to create your first workbook.
+                        </td>
+                    </tr>
+                {% endif %}
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<!-- Excel Workbook Multi-Sheet Preview Modal -->
+<div id="previewModal" class="modal-backdrop" style="display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(11, 15, 25, 0.85); backdrop-filter: blur(6px); z-index: 9999; justify-content: center; align-items: center; padding: 24px;">
+    <div class="modal-container" style="background: var(--bg-card); border: 1px solid var(--border-color); border-radius: 12px; width: 94%; max-width: 1350px; max-height: 88vh; display: flex; flex-direction: column; box-shadow: 0 20px 50px rgba(0,0,0,0.6); overflow: hidden;">
+        
+        <!-- Modal Header -->
+        <div style="padding: 16px 24px; border-bottom: 1px solid var(--border-color); display: flex; justify-content: space-between; align-items: center; background: rgba(255, 255, 255, 0.02);">
+            <div>
+                <div style="font-size: 11px; font-weight: 800; color: #10b981; letter-spacing: 1px; text-transform: uppercase;">CASTING PLAN EXCEL WORKBOOK PREVIEW</div>
+                <h3 id="modalFilename" style="margin: 2px 0 0 0; font-size: 16px; font-weight: 800; color: var(--text-primary);">Workbook Preview</h3>
+            </div>
+            <div style="display: flex; gap: 12px; align-items: center;">
+                <a id="modalDownloadBtn" href="#" class="button" style="padding: 6px 14px; font-size: 12px; text-decoration: none; background: #10b981; border: none; color: white;">⬇ Download .xlsx</a>
+                <button type="button" onclick="closePreviewModal()" style="background: transparent; border: none; color: var(--text-secondary); font-size: 20px; font-weight: 700; cursor: pointer; padding: 4px 8px;">✕</button>
+            </div>
+        </div>
+
+        <!-- Sheet Selector Tabs Bar -->
+        <div id="modalSheetTabs" style="padding: 10px 24px; background: rgba(0, 0, 0, 0.25); border-bottom: 1px solid var(--border-color); display: flex; gap: 8px; overflow-x: auto; flex-shrink: 0;">
+            <!-- Dynamic Sheet Tabs rendered via JavaScript -->
+        </div>
+
+        <!-- Sheet Table Body Container -->
+        <div style="flex: 1; overflow: auto; padding: 20px;" id="modalTableContent">
+            <div style="text-align: center; padding: 40px; color: var(--text-muted); font-size: 14px;">Loading preview dataset...</div>
+        </div>
+
+        <!-- Modal Footer -->
+        <div style="padding: 12px 24px; border-top: 1px solid var(--border-color); background: rgba(0, 0, 0, 0.15); display: flex; justify-content: space-between; align-items: center; font-size: 11.5px; color: var(--text-secondary);">
+            <div id="modalSheetMeta">Showing sheet format preview matching UC 356 X 406 Output File.xlsx layout</div>
+            <button type="button" onclick="closePreviewModal()" class="button-secondary" style="padding: 5px 14px; font-size: 12px;">Close</button>
+        </div>
+    </div>
+</div>
+
+<script>
+    let previewDataCache = {};
+
+    function previewCastingPlan(filename) {
+        const modal = document.getElementById('previewModal');
+        const filenameEl = document.getElementById('modalFilename');
+        const downloadBtn = document.getElementById('modalDownloadBtn');
+        const tabsContainer = document.getElementById('modalSheetTabs');
+        const tableContainer = document.getElementById('modalTableContent');
+        const metaEl = document.getElementById('modalSheetMeta');
+
+        filenameEl.textContent = filename;
+        downloadBtn.href = '/btr/casting-plan/download/' + encodeURIComponent(filename) + '/';
+        tabsContainer.innerHTML = '';
+        tableContainer.innerHTML = '<div style="text-align: center; padding: 40px; color: var(--text-muted); font-size: 14px;">⚡ Loading Excel workbook sheet structure...</div>';
+        metaEl.textContent = 'Loading...';
+        modal.style.display = 'flex';
+
+        fetch('/btr/casting-plan/preview/' + encodeURIComponent(filename) + '/')
+            .then(res => res.json())
+            .then(data => {
+                if (data.status !== 'success' || !data.sheets) {
+                    tableContainer.innerHTML = '<div style="padding: 40px; color: var(--danger); text-align: center;">Error loading preview: ' + (data.message || 'File unavailable') + '</div>';
+                    return;
+                }
+
+                previewDataCache = data.sheets;
+                const sheetNames = data.sheet_names || Object.keys(data.sheets);
+
+                tabsContainer.innerHTML = '';
+                sheetNames.forEach((sheetName, index) => {
+                    const btn = document.createElement('button');
+                    btn.type = 'button';
+                    btn.className = 'sheet-tab-btn';
+                    btn.style.cssText = `padding: 7px 16px; font-size: 12px; font-weight: 700; border-radius: 6px; cursor: pointer; border: 1px solid var(--border-color); background: ${index === 0 ? '#10b981' : 'var(--bg-card-sub)'}; color: ${index === 0 ? '#ffffff' : 'var(--text-secondary)'}; flex-shrink: 0; transition: all 0.15s ease;`;
+                    btn.textContent = '📄 ' + sheetName;
+                    btn.onclick = () => renderSheetData(sheetName, btn);
+                    tabsContainer.appendChild(btn);
+                });
+
+                if (sheetNames.length > 0) {
+                    renderSheetData(sheetNames[0], tabsContainer.children[0]);
+                }
+            })
+            .catch(err => {
+                tableContainer.innerHTML = '<div style="padding: 40px; color: var(--danger); text-align: center;">Failed to load workbook preview.</div>';
+            });
+    }
+
+    function renderSheetData(sheetName, activeBtn) {
+        const tableContainer = document.getElementById('modalTableContent');
+        const metaEl = document.getElementById('modalSheetMeta');
+        
+        document.querySelectorAll('.sheet-tab-btn').forEach(btn => {
+            btn.style.background = 'var(--bg-card-sub)';
+            btn.style.color = 'var(--text-secondary)';
+        });
+        if (activeBtn) {
+            activeBtn.style.background = '#10b981';
+            activeBtn.style.color = '#ffffff';
+        }
+
+        const sheet = previewDataCache[sheetName];
+        if (!sheet) {
+            tableContainer.innerHTML = '<div style="padding: 20px; color: var(--text-muted);">No data in this sheet.</div>';
+            return;
+        }
+
+        const headers = sheet.headers || [];
+        const rows = sheet.rows || [];
+
+        metaEl.textContent = `Sheet '${sheetName}' — Showing ${rows.length} preview row(s) and ${headers.length} column(s) (Matching UC 356 X 406 Output File.xlsx layout)`;
+
+        let html = '<div style="overflow-x: auto; max-height: 55vh;"><table style="width: 100%; border-collapse: collapse; font-size: 12px;"><thead><tr style="background: rgba(255, 255, 255, 0.05);">';
+        html += '<th style="padding: 8px 12px; border: 1px solid var(--border-color); color: var(--text-muted); text-align: center; width: 40px;">#</th>';
+        
+        headers.forEach(h => {
+            html += `<th style="padding: 8px 12px; border: 1px solid var(--border-color); color: var(--text-primary); font-weight: 700; white-space: nowrap;">${h || ''}</th>`;
+        });
+        html += '</tr></thead><tbody>';
+
+        if (rows.length === 0) {
+            html += `<tr><td colspan="${headers.length + 1}" style="text-align: center; padding: 24px; color: var(--text-muted);">Sheet '${sheetName}' contains no data rows.</td></tr>`;
+        } else {
+            rows.forEach((row, idx) => {
+                html += `<tr style="border-bottom: 1px solid var(--border-color); background: ${idx % 2 === 0 ? 'transparent' : 'rgba(255,255,255,0.015)'};">`;
+                html += `<td style="padding: 6px 12px; border: 1px solid var(--border-color); color: var(--text-muted); text-align: center; font-weight: 600;">${idx + 1}</td>`;
+                row.forEach(val => {
+                    const displayVal = val !== null && val !== undefined ? val : '-';
+                    html += `<td style="padding: 6px 12px; border: 1px solid var(--border-color); color: var(--text-primary); white-space: nowrap;">${displayVal}</td>`;
+                });
+                html += '</tr>';
+            });
+        }
+
+        html += '</tbody></table></div>';
+        tableContainer.innerHTML = html;
+    }
+
+    function closePreviewModal() {
+        document.getElementById('previewModal').style.display = 'none';
+    }
+</script>
+{% endblock %}

@@ -1,0 +1,493 @@
+{% extends 'casting_plan/base.html' %}
+{% block page_title %}Casting Optimizer{% endblock %}
+
+{% block content %}
+<style>
+    /* Premium visual styling for Create Casting Plan */
+    .breadcrumb-container {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 24px;
+    }
+    
+    .breadcrumb-eyebrow {
+        font-size: 11px;
+        font-weight: 700;
+        letter-spacing: 1px;
+        color: var(--primary);
+        text-transform: uppercase;
+        margin-bottom: 4px;
+    }
+    
+    .page-title {
+        font-size: 28px;
+        font-weight: 800;
+        color: var(--text-primary);
+        margin: 0;
+        letter-spacing: -0.5px;
+    }
+    
+    .page-subtitle {
+        font-size: 14px;
+        color: var(--text-secondary);
+        margin-top: 4px;
+        margin-bottom: 0;
+    }
+    
+    .form-group {
+        display: flex;
+        flex-direction: column;
+        gap: 6px;
+    }
+    
+    .form-group label {
+        font-size: 11px;
+        font-weight: 700;
+        color: var(--text-secondary);
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        margin: 0;
+    }
+    
+    .form-group input, .form-group select {
+        padding: 10px 14px;
+        border: 1px solid var(--border-color);
+        border-radius: var(--radius-md);
+        font-size: 14px;
+        font-weight: 500;
+        outline: none;
+        background: var(--bg-card);
+        color: var(--text-primary);
+        transition: all 0.2s;
+        font-family: inherit;
+        width: 100%;
+    }
+    
+    .form-group input:focus, .form-group select:focus {
+        border-color: var(--primary);
+        box-shadow: 0 0 0 3px rgba(15, 86, 166, 0.1);
+    }
+    
+    .optimizer-grid-5 {
+        display: grid;
+        grid-template-columns: repeat(5, 1fr);
+        gap: 16px;
+        margin-bottom: 16px;
+    }
+    
+    .optimizer-grid-4 {
+        display: grid;
+        grid-template-columns: 2fr 1fr 1fr 1fr;
+        gap: 16px;
+    }
+    
+    .optimizer-grid-3 {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 16px;
+    }
+    
+    .panel-header-custom {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        margin-bottom: 20px;
+        border-bottom: 1px solid var(--border-color);
+        padding-bottom: 12px;
+    }
+    
+    .panel-header-custom h2 {
+        font-size: 13px;
+        font-weight: 700;
+        color: var(--primary);
+        text-transform: uppercase;
+        letter-spacing: 1px;
+        margin: 0;
+    }
+    
+    .weight-slider {
+        width: 100%;
+        height: 6px;
+        background: #e2e8f0;
+        border-radius: 3px;
+        outline: none;
+        -webkit-appearance: none;
+        accent-color: var(--primary);
+        cursor: pointer;
+    }
+    
+    .weight-val-container {
+        position: relative;
+        display: flex;
+        align-items: center;
+        width: 75px;
+    }
+    
+    .weight-val-input {
+        width: 100%;
+        padding: 8px 24px 8px 12px;
+        text-align: right;
+        border: 1px solid var(--border-color);
+        border-radius: var(--radius-sm);
+        font-size: 13px;
+        font-weight: 600;
+        outline: none;
+        transition: border-color 0.2s;
+    }
+    
+    .weight-val-input:focus {
+        border-color: var(--primary);
+    }
+    
+    .weight-percentage-addon {
+        position: absolute;
+        right: 8px;
+        color: var(--text-secondary);
+        font-size: 12px;
+        font-weight: 600;
+    }
+    
+    /* Reset form display to override default app.css flex layout */
+    #planForm {
+        display: block;
+        width: 100%;
+    }
+    
+    /* Grid layout for side-by-side panels (Section 3 & Section 4) */
+    .grid-side-by-side {
+        display: grid;
+        grid-template-columns: 1.15fr 1fr;
+        gap: 24px;
+        margin-bottom: 24px;
+        align-items: stretch;
+    }
+
+    /* Responsive overrides */
+    @media (max-width: 1200px) {
+        .optimizer-grid-5 {
+            grid-template-columns: repeat(3, 1fr);
+        }
+        .optimizer-grid-4 {
+            grid-template-columns: 1fr 1fr;
+        }
+        .grid-side-by-side {
+            grid-template-columns: 1fr;
+            gap: 20px;
+        }
+        .demand-input-grid {
+            grid-template-columns: 1fr !important;
+        }
+    }
+    
+    @media (max-width: 768px) {
+        .optimizer-grid-5, .optimizer-grid-4, .optimizer-grid-3 {
+            grid-template-columns: 1fr;
+        }
+    }
+</style>
+
+<!-- Top Breadcrumbs and Headers -->
+<div class="breadcrumb-container">
+    <div>
+        <div class="breadcrumb-eyebrow">SPM &bull; CONTROL ROOM &bull; CASTING OPTIMIZER</div>
+        <h1 class="page-title">Create Casting Plan</h1>
+        <p class="page-subtitle">Import demand, set optimization preferences and generate optimal casting plan.</p>
+    </div>
+    <a href="/" class="button button-secondary" style="display: flex; align-items: center; gap: 8px; border-radius: 8px; padding: 10px 16px;">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><line x1="19" y1="12" x2="5" y2="12"></line><polyline points="12 19 5 12 12 5"></polyline></svg>
+        Back to Dashboard
+    </a>
+</div>
+
+<!-- Main Planning and Optimization Form -->
+<form id="planForm" method="post" action="{% url 'generate_plan' %}">
+    {% csrf_token %}
+    <input type="hidden" name="plan_name" id="plan_name" value="SPM Casting Plan">
+
+    <!-- 1. PLANNING CONTROL PANEL -->
+    <section class="panel" style="padding: 24px; margin-bottom: 24px;">
+        <div class="panel-header-custom">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--primary)" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" style="color: var(--primary);"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg>
+            <h2>1. PLANNING CONTROL</h2>
+        </div>
+        
+        <!-- Row 1 -->
+        <div class="optimizer-grid-5">
+            <div class="form-group">
+                <label>Plan Date</label>
+                <input type="date" name="plan_date" value="2026-08-29" onchange="updatePlanName()">
+            </div>
+            <div class="form-group">
+                <label>Planning Horizon</label>
+                <select name="planning_horizon">
+                    <option value="Weekly" selected>Weekly</option>
+                    <option value="Bi-weekly">Bi-weekly</option>
+                    <option value="Monthly">Monthly</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label>SPM Section</label>
+                <select name="spm_section" onchange="updatePlanName()">
+                    <option value="">UB_305X165</option>
+                    {% for sec in sections %}
+                    <option value="{{ sec }}">{{ sec }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="form-group">
+                <label>Priority Rule</label>
+                <select name="priority_rule">
+                    <option value="Delivery Date" selected>Delivery Date</option>
+                    <option value="Age">Age</option>
+                    <option value="FIFO">FIFO</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label>Required Delivery Till</label>
+                <input type="date" name="delivery_till" value="2026-09-05">
+            </div>
+        </div>
+        
+        <!-- Row 2 -->
+        <div class="optimizer-grid-4">
+            <div class="form-group">
+                <label>Customer / Order Filter (Optional)</label>
+                <select name="customer_filter">
+                    <option value="All" selected>All Customers</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label>Export / Domestic</label>
+                <select name="export_domestic">
+                    <option value="All" selected>All</option>
+                    <option value="Export">Export</option>
+                    <option value="Domestic">Domestic</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label>Specific SO (Optional)</label>
+                <input type="text" name="specific_so" placeholder="Enter SO No. (comma separated)">
+            </div>
+            <div class="form-group">
+                <label>Existing RM Availability (Optional)</label>
+                <div style="position: relative; display: flex; align-items: center; width: 100%;">
+                    <input type="number" name="existing_rm" placeholder="Enter Qty" step="0.01" style="padding-right: 40px;">
+                    <span style="position: absolute; right: 12px; color: var(--text-secondary); font-size: 12px; font-weight: 600; text-transform: uppercase;">MT</span>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- 2. DEMAND INPUT PANEL -->
+    <section class="panel" style="padding: 24px; margin-bottom: 24px;">
+        <div class="panel-header-custom">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--primary)" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" style="color: var(--primary);"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line><polyline points="10 9 9 9 8 9"></polyline></svg>
+            <h2>2. DEMAND INPUT</h2>
+        </div>
+        
+        <div class="demand-input-grid" style="display: grid; grid-template-columns: 1.5fr 3.5fr; gap: 20px; align-items: stretch;">
+            <!-- Upload Box (Left Card) -->
+            <div style="border: 2px dashed var(--border-color); border-radius: 12px; padding: 24px; text-align: center; background: var(--bg-main); display: flex; flex-direction: column; align-items: center; justify-content: center; box-sizing: border-box;">
+                <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="var(--primary)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="margin-bottom: 12px; color: var(--primary);"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="17 8 12 3 7 8"></polyline><line x1="12" y1="3" x2="12" y2="15"></line></svg>
+                <div style="font-weight: 700; font-size: 14px; color: var(--text-primary); margin-bottom: 4px;">Upload Demand Excel</div>
+                <div style="font-size: 12px; color: var(--text-secondary); margin-bottom: 16px;">Upload input casting plan.xlsm or SAP export</div>
+                <button type="button" class="button" onclick="triggerFileInput();" style="padding: 10px 20px; font-size: 13px; border-radius: 8px;">
+                    Upload File
+                </button>
+                <div style="font-size: 11px; color: var(--text-muted); margin-top: 8px;">.xlsm, .xlsx files only</div>
+            </div>
+            
+            <!-- Uploaded File Summary Box (Right Card) -->
+            <div style="border: 1px solid var(--border-color); border-radius: 12px; padding: 24px; background: var(--bg-card); display: flex; flex-direction: column; justify-content: space-between; box-shadow: var(--shadow-sm); box-sizing: border-box;">
+                <div style="display: flex; justify-content: space-between; align-items: flex-start;">
+                    <div>
+                        <div style="font-size: 11px; font-weight: 700; color: var(--text-secondary); text-transform: uppercase; margin-bottom: 6px; letter-spacing: 0.5px;">Uploaded File</div>
+                        <div style="display: flex; align-items: center; gap: 8px;">
+                            <div style="background: #e6f4ea; color: #137333; padding: 4px; border-radius: 50%; display: flex; align-items: center; justify-content: center;">
+                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polyline points="20 6 9 17 4 12"></polyline></svg>
+                            </div>
+                            <strong style="font-size: 15px; color: var(--text-primary);">{{ source_file|default:"input casting plan.xlsm" }}</strong>
+                            {% if source_file %}
+                            <span class="status-badge success" style="font-size: 10px; padding: 2px 8px; font-weight: 700; border-radius: 4px;">Success</span>
+                            {% else %}
+                            <span class="status-badge success" style="font-size: 10px; padding: 2px 8px; font-weight: 700; border-radius: 4px;">Success</span>
+                            {% endif %}
+                        </div>
+                        <div style="font-size: 12px; color: var(--text-secondary); margin-top: 4px;">
+                            Uploaded on 29/08/2026 11:30 AM
+                        </div>
+                    </div>
+                </div>
+                
+                <div style="display: flex; justify-content: space-between; align-items: center; gap: 16px; margin-top: 16px;">
+                    <div style="display: flex; gap: 16px; flex: 1;">
+                        <div style="background: var(--bg-main); border: 1px solid var(--border-color); border-radius: 10px; padding: 12px; flex: 1; text-align: center;">
+                            <div style="font-size: 24px; font-weight: 800; color: var(--primary);">{{ total_orders|default:"47" }}</div>
+                            <div style="font-size: 11px; font-weight: 600; color: var(--text-secondary); text-transform: uppercase; margin-top: 2px; letter-spacing: 0.5px;">Total Orders</div>
+                        </div>
+                        <div style="background: var(--bg-main); border: 1px solid var(--border-color); border-radius: 10px; padding: 12px; flex: 1; text-align: center;">
+                            <div style="font-size: 24px; font-weight: 800; color: var(--primary);">{{ eligible_orders|default:"31" }}</div>
+                            <div style="font-size: 11px; font-weight: 600; color: var(--text-secondary); text-transform: uppercase; margin-top: 2px; letter-spacing: 0.5px;">Eligible Orders</div>
+                        </div>
+                        <div style="background: var(--bg-main); border: 1px solid var(--border-color); border-radius: 10px; padding: 12px; flex: 1; text-align: center;">
+                            <div style="font-size: 24px; font-weight: 800; color: var(--primary);">{% if pending_qty %}{{ pending_qty|floatformat:2 }}{% else %}1,842.00{% endif %}</div>
+                            <div style="font-size: 11px; font-weight: 600; color: var(--text-secondary); text-transform: uppercase; margin-top: 2px; letter-spacing: 0.5px;">Pending Qty (MT)</div>
+                        </div>
+                        <div style="background: var(--bg-main); border: 1px solid var(--border-color); border-radius: 10px; padding: 12px; flex: 1; text-align: center;">
+                            <div style="font-size: 24px; font-weight: 800; color: var(--primary);">{{ selected_orders|default:"31" }}</div>
+                            <div style="font-size: 11px; font-weight: 600; color: var(--text-secondary); text-transform: uppercase; margin-top: 2px; letter-spacing: 0.5px;">Selected Orders</div>
+                        </div>
+                    </div>
+                    
+                    <a href="{% url 'data' %}" class="button button-secondary" style="display: flex; align-items: center; gap: 6px; border-radius: 8px; padding: 12px 16px; font-size: 13px; white-space: nowrap; height: fit-content;">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>
+                        Preview / Select Orders
+                    </a>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Row with side-by-side columns for Section 3 and Section 4 -->
+    <div class="grid-side-by-side">
+        <!-- 3. AUTOMATIC MASTER DATA RESOLUTION -->
+        <section class="panel" style="padding: 24px; margin-bottom: 0; display: flex; flex-direction: column; height: 100%;">
+            <div class="panel-header-custom">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--primary)" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" style="color: var(--primary);"><polygon points="12 2 2 7 12 12 22 7 12 2"></polygon><polyline points="2 17 12 22 22 17"></polyline><polyline points="2 12 12 17 22 12"></polyline></svg>
+                <h2>3. AUTOMATIC MASTER DATA RESOLUTION</h2>
+            </div>
+            
+            <div style="display: flex; flex-direction: column; gap: 14px; flex-grow: 1; justify-content: center;">
+                <div style="background: var(--bg-main); border: 1px solid var(--border-color); border-radius: 10px; padding: 16px; display: flex; align-items: flex-start; gap: 12px;">
+                    <div style="background: #e8f0fe; color: var(--primary); padding: 8px; border-radius: 50%; display: flex; align-items: center; justify-content: center; flex-shrink: 0;">
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><path d="M12 16v-4"></path><path d="M12 8h.01"></path></svg>
+                    </div>
+                    <div>
+                        <div style="font-weight: 700; font-size: 13.5px; color: var(--text-primary); margin-bottom: 4px;">Dynamic Rule Engine Active</div>
+                        <p style="font-size: 12px; color: var(--text-secondary); margin: 0; line-height: 1.4;">
+                            The system automatically maps finished profile dimensions and section weights directly to standard casting bloom/billet specifications, location rules, and tolerances from the <strong>SectionWeightMap</strong> master database.
+                        </p>
+                    </div>
+                </div>
+
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-top: 8px;">
+                    <div style="background: var(--bg-card); border: 1px solid var(--border-color); border-radius: 8px; padding: 12px; font-size: 12px;">
+                        <div style="color: var(--text-secondary); font-weight: 600; margin-bottom: 2px;">RM LOCATION</div>
+                        <div style="font-weight: 700; color: var(--primary); font-size: 14px;">AUTO (MCAP)</div>
+                    </div>
+                    <div style="background: var(--bg-card); border: 1px solid var(--border-color); border-radius: 8px; padding: 12px; font-size: 12px;">
+                        <div style="color: var(--text-secondary); font-weight: 600; margin-bottom: 2px;">BILLET TOLERANCE</div>
+                        <div style="font-weight: 700; color: var(--primary); font-size: 14px;">AUTO (From Rules)</div>
+                    </div>
+                    <div style="background: var(--bg-card); border: 1px solid var(--border-color); border-radius: 8px; padding: 12px; font-size: 12px;">
+                        <div style="color: var(--text-secondary); font-weight: 600; margin-bottom: 2px;">RM LENGTH</div>
+                        <div style="font-weight: 700; color: var(--primary); font-size: 14px;">AUTO (Predefined)</div>
+                    </div>
+                    <div style="background: var(--bg-card); border: 1px solid var(--border-color); border-radius: 8px; padding: 12px; font-size: 12px;">
+                        <div style="color: var(--text-secondary); font-weight: 600; margin-bottom: 2px;">GRADE COMPATIBILITY</div>
+                        <div style="font-weight: 700; color: var(--primary); font-size: 14px;">AUTO (GradeMap Table)</div>
+                    </div>
+                </div>
+            </div>
+        </section>
+    
+        <!-- 4. STANDARD CASTING RUN OPTIONS -->
+        <section class="panel" style="padding: 24px; margin-bottom: 0; display: flex; flex-direction: column; height: 100%;">
+            <div class="panel-header-custom">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--primary)" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" style="color: var(--primary);"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>
+                <h2>4. STANDARD CASTING RUN OPTIONS</h2>
+            </div>
+            
+            <div style="display: flex; flex-direction: column; gap: 14px; flex-grow: 1; justify-content: center;">
+                <div style="background: #e6f4ea; border: 1px solid #c3e6cb; border-radius: 10px; padding: 16px; display: flex; align-items: flex-start; gap: 12px;">
+                    <div style="background: #34a853; color: white; padding: 6px; border-radius: 50%; display: flex; align-items: center; justify-content: center; flex-shrink: 0; margin-top: 2px;">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>
+                    </div>
+                    <div>
+                        <div style="font-weight: 800; font-size: 14px; color: #137333; margin-bottom: 2px; text-transform: uppercase;">Standard Plant Casting Mode Active</div>
+                        <p style="font-size: 12px; color: #137333; margin: 0; line-height: 1.4;">
+                            Arbitrary heuristic sliders have been removed. Planning quantities are calculated using standard casting parameters and rounded to heat capacities.
+                        </p>
+                    </div>
+                </div>
+
+                <div style="display: flex; flex-direction: column; gap: 10px; margin-top: 6px;">
+                    <div style="display: flex; justify-content: space-between; font-size: 12.5px; border-bottom: 1px dashed var(--border-color); padding-bottom: 6px;">
+                        <span style="color: var(--text-secondary); font-weight: 500;">Caster Heat Size</span>
+                        <strong style="color: var(--text-primary);">50 MT / 100 MT Heats</strong>
+                    </div>
+                    <div style="display: flex; justify-content: space-between; font-size: 12.5px; border-bottom: 1px dashed var(--border-color); padding-bottom: 6px;">
+                        <span style="color: var(--text-secondary); font-weight: 500;">Rolling Yield Loss Factor</span>
+                        <strong style="color: var(--text-primary);">96.5% Yield (3.5% Loss)</strong>
+                    </div>
+                    <div style="display: flex; justify-content: space-between; font-size: 12.5px; border-bottom: 1px dashed var(--border-color); padding-bottom: 6px;">
+                        <span style="color: var(--text-secondary); font-weight: 500;">Chemistry Scheduling Priority</span>
+                        <strong style="color: var(--text-primary);">Tundish Transitions Minimization</strong>
+                    </div>
+                    <div style="display: flex; justify-content: space-between; font-size: 12.5px;">
+                        <span style="color: var(--text-secondary); font-weight: 500;">Unmapped Configurations</span>
+                        <strong style="color: #c5221f; font-weight: bold;">Raise MISSING_MASTER_DATA</strong>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </div>
+
+    <!-- 5. REVIEW & GENERATE PLAN PANEL -->
+    <section class="panel" style="padding: 24px; margin-bottom: 24px; display: flex; justify-content: space-between; align-items: center; gap: 24px;">
+        <div style="display: flex; align-items: center; gap: 12px; background: var(--primary-light); padding: 16px 20px; border-radius: 10px; border-left: 4px solid var(--primary); flex: 1;">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--primary)" stroke-width="2" style="flex-shrink: 0;"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="16" x2="12" y2="12"></line><line x1="12" y1="8" x2="12.01" y2="8"></line></svg>
+            <span style="font-size: 13.5px; color: var(--primary-hover); font-weight: 500; line-height: 1.4;">
+                Review above settings and generate the optimal casting plan. The system will calculate RM requirement, billet length, yield and savings.
+            </span>
+        </div>
+        <div style="display: flex; gap: 12px; align-items: center; flex-shrink: 0;">
+            <button type="reset" class="button button-secondary" style="display: flex; align-items: center; gap: 8px; border-radius: 8px; padding: 12px 20px; height: 44px;" onclick="resetFormToDefaults();">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M21.5 2v6h-6M21.34 15.57a10 10 0 1 1-.57-8.38l5.67-5.67"></path></svg>
+                Reset
+            </button>
+            <button type="submit" class="button" style="display: flex; align-items: center; gap: 8px; border-radius: 8px; padding: 12px 24px; background: var(--primary); color: white; border: none; font-weight: 600; cursor: pointer; height: 44px;">
+                Generate Casting Plan
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"></line><polyline points="12 5 19 12 12 19"></polyline></svg>
+            </button>
+        </div>
+    </section>
+</form>
+
+<!-- Hidden form for demand uploads -->
+<form id="hiddenUploadForm" method="post" action="{% url 'upload_demand' %}" enctype="multipart/form-data" style="display: none;">
+    {% csrf_token %}
+    <input type="file" id="hidden_demand_file" name="demand_file" accept=".xlsx,.xlsm" onchange="submitHiddenUploadForm()">
+    <input type="checkbox" name="replace" value="1" checked>
+</form>
+
+<script>
+    function triggerFileInput() {
+        document.getElementById('hidden_demand_file').click();
+    }
+    
+    function submitHiddenUploadForm() {
+        const fileInput = document.getElementById('hidden_demand_file');
+        if (fileInput.files.length > 0) {
+            document.getElementById('hiddenUploadForm').submit();
+        }
+    }
+
+    function updatePlanName() {
+        const sec = document.querySelector('select[name="spm_section"]').value || 'UB_305X165';
+        const dateVal = document.querySelector('input[name="plan_date"]').value || '2026-08-29';
+        document.getElementById('plan_name').value = `SPM Casting Plan (${sec}) ${dateVal}`;
+    }
+    
+    function resetFormToDefaults() {
+        setTimeout(function() {
+            updatePlanName();
+        }, 10);
+    }
+    
+    document.addEventListener('DOMContentLoaded', function() {
+        updatePlanName();
+    });
+</script>
+{% endblock %}

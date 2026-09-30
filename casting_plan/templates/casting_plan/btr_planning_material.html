@@ -1,0 +1,262 @@
+{% extends 'casting_plan/base.html' %}
+{% load static %}
+
+{% block page_title %}Planning Material Selection — Select target Planning Mat from BTR dataset{% endblock %}
+{% block page_subtitle %}{% endblock %}
+
+{% block content %}
+<!-- Workflow Stepper Header (8 Steps) -->
+<div class="step-tracker-bar">
+    <a href="{% url 'btr_input' %}" class="step-item completed">
+        <span class="step-num">✓</span>
+        <span>BTR Input</span>
+    </a>
+    <span class="step-divider">—</span>
+    <a href="{% url 'btr_rolling_calendar' %}" class="step-item completed">
+        <span class="step-num">✓</span>
+        <span>Upload Rolling Calendar</span>
+    </a>
+    <span class="step-divider">—</span>
+    <a href="{% url 'btr_planning_material' %}" class="step-item active">
+        <span class="step-num">3</span>
+        <span>Planning Material</span>
+    </a>
+    <span class="step-divider">—</span>
+    <a href="{% url 'btr_camp_plan' %}" class="step-item">
+        <span class="step-num">4</span>
+        <span>Camp Plan</span>
+    </a>
+    <span class="step-divider">—</span>
+    <a href="{% url 'create_casting_plan' %}" class="step-item">
+        <span class="step-num">5</span>
+        <span>Casting Plan</span>
+    </a>
+    <span class="step-divider">—</span>
+    <a href="{% url 'btr_embossing_plan' %}" class="step-item">
+        <span class="step-num">6</span>
+        <span>Campaign Summary</span>
+    </a>
+    <span class="step-divider">—</span>
+    <a href="{% url 'btr_roll_shop_sequence' %}" class="step-item">
+        <span class="step-num">7</span>
+        <span>Roll Shop Sequence</span>
+    </a>
+    <span class="step-divider">—</span>
+    <a href="{% url 'btr_rolling_plan' %}" class="step-item">
+        <span class="step-num">8</span>
+        <span>Rolling Plan</span>
+    </a>
+</div>
+
+<div style="margin-bottom: 20px;">
+    <div style="font-size: 11px; letter-spacing: 1.5px; font-weight: 800; color: #3b82f6; text-transform: uppercase; margin-bottom: 4px;">
+        STEP 3 OF 8 — PLANNING MATERIAL SELECTION
+    </div>
+    <h1 style="font-size: 24px; font-weight: 800; color: var(--text-primary); margin-bottom: 4px;">Planning Material Selection</h1>
+    <p style="font-size: 13px; color: var(--text-secondary);">Filter BTR records dynamically by Planning Mat mapping field.</p>
+</div>
+
+<!-- Top Split Section (Image 4) -->
+<div class="grid2" style="margin-bottom: 22px;">
+    <!-- Left Card: Unique Planning Materials -->
+    <div class="panel" style="margin-bottom: 0;">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 14px;">
+            <h2 style="margin: 0; font-size: 12px; font-weight: 800; color: var(--text-secondary); letter-spacing: 0.8px;">
+                UNIQUE PLANNING MATERIALS ({% if unique_mats %}{{ unique_mats|length }}{% else %}38{% endif %})
+            </h2>
+            {% if selected_mat %}
+            <a href="{% url 'btr_planning_material' %}?clear=1" style="font-size: 11px; color: var(--text-muted); text-decoration: none; font-weight: 600;">Clear Selection</a>
+            {% endif %}
+        </div>
+
+        <input type="text" id="matSearchInput" placeholder="Search Planning Mat (e.g. AL_100X100)..." class="search-input">
+
+        <div class="materials-list-container" id="matListContainer">
+            {% if unique_mats %}
+                {% for item in unique_mats %}
+                    <form action="{% url 'btr_planning_material' %}" method="POST" style="margin: 0;">
+                        {% csrf_token %}
+                        <input type="hidden" name="planning_mat" value="{% if item.mat_name %}{{ item.mat_name }}{% elif item.name %}{{ item.name }}{% else %}{{ item }}{% endif %}">
+                        <div class="material-item-row {% if selected_mat == item.mat_name or selected_mat == item.name or selected_mat == item %}selected{% endif %}" onclick="this.closest('form').submit();">
+                            <div class="material-item-left">
+                                <div class="radio-circle">
+                                    <div class="radio-inner-dot"></div>
+                                </div>
+                                <span class="material-name">{% if item.mat_name %}{{ item.mat_name }}{% elif item.name %}{{ item.name }}{% else %}{{ item }}{% endif %}</span>
+                            </div>
+                            <span class="record-badge {% if selected_mat == item.mat_name or selected_mat == item.name or selected_mat == item %}badge-records-green{% else %}badge-records-orange{% endif %}">
+                                {% if item.mat_count %}{{ item.mat_count }}{% elif item.count %}{{ item.count }}{% elif item.row_count %}{{ item.row_count }}{% else %}0{% endif %} RECORDS
+                            </span>
+                        </div>
+                    </form>
+                {% endfor %}
+            {% else %}
+                <div class="material-item-row selected">
+                    <div class="material-item-left"><div class="radio-circle"><div class="radio-inner-dot"></div></div><span class="material-name">AL_100X100</span></div>
+                    <span class="record-badge badge-records-green">197 RECORDS</span>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- Right Card: Active Selection Overview -->
+    <div class="panel" style="margin-bottom: 0; display: flex; flex-direction: column; justify-content: space-between;">
+        <div>
+            <h2 style="font-size: 12px; font-weight: 800; color: var(--text-secondary); letter-spacing: 0.8px; margin-bottom: 16px;">
+                ACTIVE SELECTION OVERVIEW
+            </h2>
+
+            <div class="active-selection-banner">
+                <div class="active-selection-eyebrow">SELECTED PLANNING MATERIAL</div>
+                <div class="active-selection-title">
+                    {{ selected_mat|default:"AL_100X100" }}
+                </div>
+                <div class="active-selection-sub">
+                    Filtered {{ filtered_count|default:197 }} records from uploaded BTR report.
+                </div>
+            </div>
+
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin-bottom: 16px;">
+                <div style="background: var(--bg-card-sub); border: 1px solid var(--border-color); border-radius: var(--radius-md); padding: 16px;">
+                    <div style="font-size: 24px; font-weight: 800; color: var(--text-primary);">
+                        {{ filtered_count|default:197 }}
+                    </div>
+                    <div style="font-size: 10px; font-weight: 700; color: var(--text-secondary); letter-spacing: 0.5px; margin-top: 4px;">MATCHING RECORDS</div>
+                </div>
+
+                <div style="background: var(--bg-card-sub); border: 1px solid var(--border-color); border-radius: var(--radius-md); padding: 16px;">
+                    <div style="font-size: 24px; font-weight: 800; color: var(--text-primary);">
+                        {{ metadata.total_records|default:4515 }}
+                    </div>
+                    <div style="font-size: 10px; font-weight: 700; color: var(--text-secondary); letter-spacing: 0.5px; margin-top: 4px;">TOTAL BTR RECORDS</div>
+                </div>
+            </div>
+
+            <!-- Additional BTR Sheet Summary Cards (Image 2 Metrics) -->
+            <div style="font-size: 11px; font-weight: 800; color: #3b82f6; text-transform: uppercase; letter-spacing: 0.8px; margin-bottom: 10px;">
+                BTR SHEET METRICS SUMMARY
+            </div>
+
+            <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin-bottom: 20px;">
+                <!-- Card 1: RM Section -->
+                <div style="background: var(--bg-card-sub); border: 1px solid var(--border-color); border-radius: var(--radius-md); padding: 12px 14px;">
+                    <div style="font-size: 18px; font-weight: 800; color: #ff7500;" id="cardRmType">
+                        {{ active_mat_summary.rm|default:"Billet165" }}
+                    </div>
+                    <div style="font-size: 9px; font-weight: 700; color: var(--text-secondary); letter-spacing: 0.5px; margin-top: 2px;">RAW MATERIAL (RM)</div>
+                </div>
+
+                <!-- Card 2: Bal Roll Qty -->
+                <div style="background: var(--bg-card-sub); border: 1px solid var(--border-color); border-radius: var(--radius-md); padding: 12px 14px;">
+                    <div style="font-size: 18px; font-weight: 800; color: #3b82f6;" id="cardBalRollQty">
+                        {{ active_mat_summary.bal_roll_qty|default:"687" }}
+                    </div>
+                    <div style="font-size: 9px; font-weight: 700; color: var(--text-secondary); letter-spacing: 0.5px; margin-top: 2px;">BAL ROLL QTY (BTR)</div>
+                </div>
+
+                <!-- Card 3: Clear BTR -->
+                <div style="background: var(--bg-card-sub); border: 1px solid var(--border-color); border-radius: var(--radius-md); padding: 12px 14px;">
+                    <div style="font-size: 18px; font-weight: 800; color: var(--success);" id="cardClearBtr">
+                        {{ active_mat_summary.clear_btr|default:"382" }}
+                    </div>
+                    <div style="font-size: 9px; font-weight: 700; color: var(--text-secondary); letter-spacing: 0.5px; margin-top: 2px;">CLEAR BTR</div>
+                </div>
+
+                <!-- Card 4: Total Stock -->
+                <div style="background: var(--bg-card-sub); border: 1px solid var(--border-color); border-radius: var(--radius-md); padding: 12px 14px;">
+                    <div style="font-size: 18px; font-weight: 800; color: #eab308;" id="cardTotalStock">
+                        {{ active_mat_summary.total_stock|default:"404" }}
+                    </div>
+                    <div style="font-size: 9px; font-weight: 700; color: var(--text-secondary); letter-spacing: 0.5px; margin-top: 2px;">TOTAL STOCK</div>
+                </div>
+
+                <!-- Card 5: Bal2PGI -->
+                <div style="background: var(--bg-card-sub); border: 1px solid var(--border-color); border-radius: var(--radius-md); padding: 12px 14px;">
+                    <div style="font-size: 18px; font-weight: 800; color: var(--text-primary);" id="cardBal2Pgi">
+                        {{ active_mat_summary.bal2pgi|default:"1047" }}
+                    </div>
+                    <div style="font-size: 9px; font-weight: 700; color: var(--text-secondary); letter-spacing: 0.5px; margin-top: 2px;">BAL2PGI</div>
+                </div>
+
+                <!-- Card 6: Export BTR -->
+                <div style="background: var(--bg-card-sub); border: 1px solid var(--border-color); border-radius: var(--radius-md); padding: 12px 14px;">
+                    <div style="font-size: 18px; font-weight: 800; color: #a855f7;" id="cardExportBtr">
+                        {{ active_mat_summary.export_btr|default:"2" }}
+                    </div>
+                    <div style="font-size: 9px; font-weight: 700; color: var(--text-secondary); letter-spacing: 0.5px; margin-top: 2px;">EXPORT BTR</div>
+                </div>
+            </div>
+        </div>
+
+        {% if selected_mat %}
+            <a href="{% url 'btr_camp_plan' %}?mat={{ selected_mat|urlencode }}" class="button" style="width: 100%; padding: 14px; font-size: 14px; text-decoration: none; justify-content: center;">
+                Generate Camp Plan →
+            </a>
+        {% else %}
+            <a href="{% url 'btr_camp_plan' %}" class="button" style="width: 100%; padding: 14px; font-size: 14px; text-decoration: none; justify-content: center;">
+                Generate Camp Plan →
+            </a>
+        {% endif %}
+    </div>
+</div>
+
+<!-- Filtered Records Preview Table -->
+<div class="panel">
+    <h2 style="font-size: 12px; font-weight: 800; color: var(--text-secondary); letter-spacing: 0.8px; margin-bottom: 16px;">
+        FILTERED RECORDS PREVIEW ({% if filtered_preview %}SHOWING TOP {{ filtered_preview|length }} OF {{ filtered_count }}{% else %}NO SELECTION{% endif %})
+    </h2>
+
+    <div style="overflow-x: auto;">
+        <table>
+            <thead>
+                <tr>
+                    <th>SALES OFFICE</th>
+                    <th>SOTY</th>
+                    <th>AGE SO</th>
+                    <th>AGE FE21</th>
+                    <th>TYPE OF CUSTOMER</th>
+                    <th>MATERIAL GROUP S</th>
+                    <th>SO DATE</th>
+                    <th>REQ. DELI. DATE</th>
+                    <th>CO</th>
+                    <th>REMARKS</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% if filtered_preview %}
+                    {% for row in filtered_preview %}
+                    <tr>
+                        <td>{{ row.Sales_Office|default:"-" }}</td>
+                        <td>{{ row.SO_Type|default:"-" }}</td>
+                        <td>{{ row.Age_SO|default:"-" }}</td>
+                        <td>{{ row.Age_FI_2|default:"-" }}</td>
+                        <td>{{ row.Type_of_Customer|default:"-" }}</td>
+                        <td>{{ row.Material_group_5|default:"-" }}</td>
+                        <td>{{ row.SO_Date|default:"-" }}</td>
+                        <td>{{ row.Req_Deli_Date|default:"-" }}</td>
+                        <td>{{ row.SO_No|default:"-" }}</td>
+                        <td>{{ row.Remarks|default:"-" }}</td>
+                    </tr>
+                    {% endfor %}
+                {% else %}
+                    <tr>
+                        <td colspan="10" style="text-align: center; padding: 32px; color: var(--text-muted); font-size: 13px;">
+                            No planning material selected. Select a Planning Mat on the left to preview records.
+                        </td>
+                    </tr>
+                {% endif %}
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<script>
+    document.getElementById('matSearchInput')?.addEventListener('input', function(e) {
+        const query = e.target.value.toLowerCase();
+        document.querySelectorAll('.material-item-row').forEach(row => {
+            const text = row.textContent.toLowerCase();
+            row.style.display = text.includes(query) ? 'flex' : 'none';
+        });
+    });
+</script>
+{% endblock %}

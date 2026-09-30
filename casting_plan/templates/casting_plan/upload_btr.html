@@ -1,0 +1,1260 @@
+{% extends 'casting_plan/base.html' %}
+{% load static %}
+
+{% block page_title %}
+  <span id="pageTitleText">
+    {% if current_step == 3 %}
+      Camp Plan Ready — Authoritative CAMP PLAN FORMAT structure generated
+    {% elif current_step == 2 or upload_info %}
+      Planning Material Selection — Select target Planning Mat from BTR dataset
+    {% else %}
+      BTR Input — Upload BTR report and validate CFD COS sheet
+    {% endif %}
+  </span>
+{% endblock %}
+{% block page_subtitle %}{% endblock %}
+
+{% block content %}
+<!-- Step Tracker Bar (8 Steps) -->
+<div class="step-tracker-bar">
+    <a href="{% url 'btr_input' %}" class="step-item active">
+        <span class="step-num">1</span>
+        <span>BTR Input</span>
+    </a>
+    <span class="step-divider">—</span>
+    <a href="{% url 'btr_rolling_calendar' %}" class="step-item" {% if not upload_info %}onclick="alert('Please upload a BTR report or select an active file from history first.'); return false;"{% endif %}>
+        <span class="step-num">2</span>
+        <span>Upload Rolling Calendar</span>
+    </a>
+    <span class="step-divider">—</span>
+    <a href="{% url 'btr_planning_material' %}" class="step-item" {% if not upload_info %}onclick="alert('Please upload a BTR report or select an active file from history first.'); return false;"{% endif %}>
+        <span class="step-num">3</span>
+        <span>Planning Material</span>
+    </a>
+    <span class="step-divider">—</span>
+    <a href="{% url 'btr_camp_plan' %}" class="step-item" {% if not upload_info %}onclick="alert('Please upload a BTR report or select an active file from history first.'); return false;"{% endif %}>
+        <span class="step-num">4</span>
+        <span>Campaign Plan</span>
+    </a>
+    <span class="step-divider">—</span>
+    <a href="{% url 'create_casting_plan' %}" class="step-item" {% if not upload_info %}onclick="alert('Please upload a BTR report or select an active file from history first.'); return false;"{% endif %}>
+        <span class="step-num">5</span>
+        <span>Casting Plan</span>
+    </a>
+    <span class="step-divider">—</span>
+    <a href="{% url 'btr_embossing_plan' %}" class="step-item" {% if not upload_info %}onclick="alert('Please upload a BTR report or select an active file from history first.'); return false;"{% endif %}>
+        <span class="step-num">6</span>
+        <span>Campaign Summary</span>
+    </a>
+    <span class="step-divider">—</span>
+    <a href="{% url 'btr_roll_shop_sequence' %}" class="step-item" {% if not upload_info %}onclick="alert('Please upload a BTR report or select an active file from history first.'); return false;"{% endif %}>
+        <span class="step-num">7</span>
+        <span>Roll Shop Sequence</span>
+    </a>
+    <span class="step-divider">—</span>
+    <a href="{% url 'btr_rolling_plan' %}" class="step-item" {% if not upload_info %}onclick="alert('Please upload a BTR report or select an active file from history first.'); return false;"{% endif %}>
+        <span class="step-num">8</span>
+        <span>Rolling Plan</span>
+    </a>
+</div>
+
+<!-- ========================================================================= -->
+<!-- STEP 1: BTR INPUT (Images 2 & 3) -->
+<!-- ========================================================================= -->
+<div id="stepView1" style="{% if active_step and active_step != 1 %}display: none;{% endif %}">
+    <div style="display: flex; justify-content: space-between; align-items: flex-end; margin-bottom: 20px;">
+        <div>
+            <div style="font-size: 11px; letter-spacing: 1.5px; font-weight: 800; color: #3b82f6; text-transform: uppercase; margin-bottom: 4px;">
+                STEP 1 OF 8 — BTR INPUT
+            </div>
+            <h1 style="font-size: 24px; font-weight: 800; color: var(--text-primary); margin-bottom: 4px;">BTR Input</h1>
+            <p style="font-size: 13px; color: var(--text-secondary);">Upload the BTR report and prepare records for Camp Plan generation.</p>
+        </div>
+        <div>
+            {% if upload_info %}
+            <a href="{% url 'btr_rolling_calendar' %}" class="button" style="background: linear-gradient(135deg, #ff6b00 0%, #ff5500 100%); color: #ffffff; padding: 10px 24px; font-size: 13.5px; font-weight: 700; border-radius: 30px; box-shadow: 0 4px 15px rgba(255, 107, 0, 0.35); border: none; text-decoration: none; display: inline-flex; align-items: center; gap: 8px;">
+                <span>Proceed to Step 2: Upload Rolling Calendar</span>
+                <span style="font-size: 15px;">→</span>
+            </a>
+            {% else %}
+            <button type="button" class="button" style="background: linear-gradient(135deg, #ff6b00 0%, #ff5500 100%); color: #ffffff; padding: 10px 24px; font-size: 13.5px; font-weight: 700; border-radius: 30px; box-shadow: 0 4px 15px rgba(255, 107, 0, 0.35); border: none; cursor: pointer; display: inline-flex; align-items: center; gap: 8px;" onclick="alert('Please upload a BTR report or select an active file from history first to proceed.'); return false;">
+                <span>Proceed to Step 2: Upload Rolling Calendar</span>
+                <span style="font-size: 15px;">→</span>
+            </button>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- Top Two Cards Row -->
+    <div class="grid2" style="margin-bottom: 22px;">
+        <!-- Left Card: Upload Dropzone & Active Dataset Selector -->
+        <div class="panel" style="margin-bottom: 0;">
+            <!-- Tab Navigation Header -->
+            <div style="display: flex; gap: 8px; margin-bottom: 16px; border-bottom: 1px solid var(--border-color); padding-bottom: 12px; align-items: center;">
+                <button type="button" id="tabBtnUpload" onclick="switchLeftPanelTab('upload')" class="button-secondary" style="padding: 7px 14px; font-size: 11px; font-weight: 800; text-transform: uppercase; letter-spacing: 0.6px; border-radius: 6px; cursor: pointer; transition: all 0.2s ease; {% if not upload_info %}background: #3b82f6; color: #ffffff; border-color: #3b82f6;{% else %}background: var(--bg-card-sub); color: var(--text-secondary); border-color: var(--border-color);{% endif %}">
+                    Upload BTR Excel Report
+                </button>
+                <button type="button" id="tabBtnActive" onclick="switchLeftPanelTab('active')" class="button-secondary" style="padding: 7px 14px; font-size: 11px; font-weight: 800; text-transform: uppercase; letter-spacing: 0.6px; border-radius: 6px; cursor: pointer; transition: all 0.2s ease; {% if upload_info %}background: #3b82f6; color: #ffffff; border-color: #3b82f6;{% else %}background: var(--bg-card-sub); color: var(--text-secondary); border-color: var(--border-color);{% endif %}">
+                    Use Active Dataset {% if upload_info %}(1 Active){% endif %}
+                </button>
+            </div>
+
+            <!-- Tab 1: Upload BTR Excel Report Dropzone -->
+            <div id="tabContentUpload" style="{% if upload_info %}display: none;{% else %}display: block;{% endif %}">
+                <form method="post" action="{% url 'upload_btr' %}" enctype="multipart/form-data" id="btrUploadForm">
+                    {% csrf_token %}
+                    <div class="dropzone-box" onclick="document.getElementById('btrFileInput').click();">
+                        <svg class="dropzone-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                            <polyline points="17 8 12 3 7 8"></polyline>
+                            <line x1="12" y1="3" x2="12" y2="15"></line>
+                        </svg>
+                        <div class="dropzone-title" id="dropzoneLabelText">Choose BTR Excel file</div>
+                        <div class="dropzone-subtitle">Accepted file type: .xlsx (Sheet: Cos / CFD COS)</div>
+                        <button type="button" class="button-secondary" style="padding: 6px 14px; font-size: 12px; margin-top: 4px;">Select Excel File</button>
+                        <input id="btrFileInput" type="file" name="btr_file" accept=".xlsx,.xlsm" required style="display: none;" onchange="updateFileName(this);">
+                    </div>
+                    <button type="submit" class="button" style="width: 100%; margin-top: 16px;">Upload BTR Report</button>
+                </form>
+            </div>
+
+            <!-- Tab 2: Use Active Dataset Box -->
+            <div id="tabContentActive" style="{% if upload_info %}display: block;{% else %}display: none;{% endif %}">
+                {% if upload_info %}
+                    <div style="background: rgba(59, 130, 246, 0.08); border: 1px solid rgba(59, 130, 246, 0.3); border-radius: 12px; padding: 18px; margin-bottom: 4px;">
+                        <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 12px;">
+                            <div>
+                                <span class="record-badge badge-records-green" style="font-weight: 800; font-size: 10px;">✓ ACTIVE DATASET LOADED</span>
+                                <h3 style="font-size: 15px; font-weight: 800; color: var(--text-primary); margin: 6px 0 4px 0; word-break: break-all;">
+                                    {{ upload_info.original_name }}
+                                </h3>
+                                <div style="font-size: 11.5px; color: var(--text-secondary); line-height: 1.5;">
+                                    Sheet: <strong style="color: var(--text-primary);">{{ upload_info.sheet_name }}</strong> &nbsp;|&nbsp; 
+                                    <strong style="color: var(--text-primary);">{{ upload_info.row_count }}</strong> Total Records &nbsp;|&nbsp; 
+                                    <strong style="color: var(--text-primary);">{{ upload_info.planning_materials|length }}</strong> Unique Mats
+                                </div>
+                            </div>
+                        </div>
+
+                        <div style="display: flex; gap: 8px; margin-top: 14px; flex-wrap: wrap;">
+                            <a href="{% url 'btr_planning_material' %}" class="button" style="padding: 7px 16px; font-size: 12px; text-decoration: none; font-weight: 700; display: inline-flex; align-items: center; gap: 6px;">
+                                <span>Proceed to Step 2</span>
+                                <span>→</span>
+                            </a>
+                            <a href="{% url 'clear_btr_upload' %}" class="button-secondary" style="padding: 7px 14px; font-size: 12px; text-decoration: none; color: var(--danger); border-color: rgba(239, 68, 68, 0.4); font-weight: 700; display: inline-flex; align-items: center; gap: 4px;">
+                                <span>✕</span>
+                                <span>Not Use Active Dataset</span>
+                            </a>
+                            <button type="button" class="button-secondary" style="padding: 7px 14px; font-size: 12px; font-weight: 600;" onclick="scrollToHistoryTable();">
+                                Switch File 👇
+                            </button>
+                        </div>
+                    </div>
+                {% else %}
+                    <div style="background: var(--bg-card-sub); border: 1px solid var(--border-color); border-radius: 12px; padding: 20px; text-align: center;">
+                        <div style="font-size: 24px; margin-bottom: 6px;">📂</div>
+                        <h4 style="font-size: 13px; font-weight: 800; color: var(--text-primary); margin: 0 0 6px 0;">No Active Dataset Selected</h4>
+                        <p style="font-size: 11.5px; color: var(--text-secondary); margin-bottom: 14px; line-height: 1.5;">
+                            Pick any previously uploaded BTR report below to make it active, or upload a new report.
+                        </p>
+
+                        {% if btr_uploads %}
+                            <div style="margin-bottom: 12px;">
+                                <select id="activeDatasetSelect" onchange="if(this.value) window.location.href = this.value;" style="width: 100%; padding: 8px 12px; font-size: 12px; border-radius: 6px; background: var(--bg-card); color: var(--text-primary); border: 1px solid var(--border-color); font-weight: 600; cursor: pointer;">
+                                    <option value="">-- Select an uploaded file from dataset list --</option>
+                                    {% for u in btr_uploads %}
+                                        <option value="{% url 'select_btr_upload' u.upload_id %}">
+                                            {{ u.filename }} ({{ u.total_records }} records — {{ u.uploaded_at_fmt }})
+                                        </option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                        {% endif %}
+
+                        <button type="button" class="button-secondary" style="width: 100%; padding: 8px; font-size: 12px; font-weight: 700;" onclick="scrollToHistoryTable();">
+                            View Uploaded Datasets List Below 👇
+                        </button>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+
+        <!-- Right Card: Workflow Validation Rules -->
+        <div class="panel" style="margin-bottom: 0;">
+            <h2 style="font-size: 12px; font-weight: 800; color: var(--text-secondary); letter-spacing: 0.8px; margin-bottom: 16px;">WORKFLOW VALIDATION RULES</h2>
+            <ul style="list-style: none; padding: 0;">
+                <li style="display: flex; align-items: flex-start; gap: 10px; margin-bottom: 14px; font-size: 13px; color: var(--text-secondary); line-height: 1.5;">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--success)" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink: 0; margin-top: 2px;"><polyline points="20 6 9 17 4 12"></polyline></svg>
+                    <span><strong>Sheet Verification:</strong> Automatically parses the <code>Cos</code> / <code>CFD COS</code> worksheet.</span>
+                </li>
+                <li style="display: flex; align-items: flex-start; gap: 10px; margin-bottom: 14px; font-size: 13px; color: var(--text-secondary); line-height: 1.5;">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--success)" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink: 0; margin-top: 2px;"><polyline points="20 6 9 17 4 12"></polyline></svg>
+                    <span><strong>Dataset Cleaning:</strong> Automatically removes Bal Bill Qty from memory processing.</span>
+                </li>
+                <li style="display: flex; align-items: flex-start; gap: 10px; margin-bottom: 14px; font-size: 13px; color: var(--text-secondary); line-height: 1.5;">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--success)" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink: 0; margin-top: 2px;"><polyline points="20 6 9 17 4 12"></polyline></svg>
+                    <span><strong>Original File Safety:</strong> Source file is untouched; all operations run in memory.</span>
+                </li>
+                <li style="display: flex; align-items: flex-start; gap: 10px; margin-bottom: 14px; font-size: 13px; color: var(--text-secondary); line-height: 1.5;">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--success)" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink: 0; margin-top: 2px;"><polyline points="20 6 9 17 4 12"></polyline></svg>
+                    <span><strong>Field Validation:</strong> Ensures Planning Mat, Sec Wt, Length, and Bal Roll Qty exist.</span>
+                </li>
+            </ul>
+        </div>
+    </div>
+
+    <!-- Uploaded File Status Card -->
+    <div class="panel">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
+            <h2 style="margin: 0; font-size: 12px; font-weight: 800; color: var(--text-secondary); letter-spacing: 0.8px;">
+                UPLOADED FILE STATUS — {% if upload_info %}ACTIVE DATASET LOADED{% else %}PENDING UPLOAD{% endif %}
+            </h2>
+            <span class="record-badge {% if upload_info %}badge-records-green{% else %}record-badge{% endif %}" style="background: var(--badge-gray); color: var(--text-muted);">
+                {% if upload_info %}ACTIVE DATASET{% else %}NO ACTIVE DATASET{% endif %}
+            </span>
+        </div>
+
+        <div class="status-stats-grid">
+            <!-- Stat 1 -->
+            <div class="status-stat-card">
+                <div class="status-stat-top">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path></svg>
+                    <span class="dot-indicator"></span>
+                </div>
+                <div class="status-stat-val">{% if upload_info %}{{ upload_info.original_name }}{% else %}No File Uploaded{% endif %}</div>
+                <div class="status-stat-label">UPLOADED FILENAME</div>
+            </div>
+
+            <!-- Stat 2 -->
+            <div class="status-stat-card">
+                <div class="status-stat-top">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"></rect></svg>
+                    <span class="dot-indicator"></span>
+                </div>
+                <div class="status-stat-val">{% if upload_info %}{{ upload_info.sheet_name }}{% else %}-{% endif %}</div>
+                <div class="status-stat-label">SHEET NAME</div>
+            </div>
+
+            <!-- Stat 3 -->
+            <div class="status-stat-card">
+                <div class="status-stat-top">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="8" y1="6" x2="21" y2="6"></line><line x1="8" y1="12" x2="21" y2="12"></line><line x1="8" y1="18" x2="21" y2="18"></line></svg>
+                    <span class="dot-indicator"></span>
+                </div>
+                <div class="status-stat-val">{% if upload_info %}{{ upload_info.row_count }}{% else %}0{% endif %}</div>
+                <div class="status-stat-label">TOTAL INPUT RECORDS</div>
+            </div>
+
+            <!-- Stat 4 -->
+            <div class="status-stat-card">
+                <div class="status-stat-top">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"></rect><rect x="14" y="3" width="7" height="7"></rect></svg>
+                    <span class="dot-indicator"></span>
+                </div>
+                <div class="status-stat-val">{% if upload_info %}76{% else %}0{% endif %}</div>
+                <div class="status-stat-label">SOURCE COLUMN COUNT</div>
+            </div>
+
+            <!-- Stat 5 -->
+            <div class="status-stat-card">
+                <div class="status-stat-top">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21.5 2v6h-6M21.34 15.57a10 10 0 1 1-.57-8.38l5.67-5.67"></path></svg>
+                    <span class="dot-indicator"></span>
+                </div>
+                <div class="status-stat-val">{% if upload_info %}{{ upload_info.planning_materials|length }}{% else %}0{% endif %}</div>
+                <div class="status-stat-label">UNIQUE PLANNING MATS</div>
+            </div>
+        </div>
+
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 14px; padding-top: 12px; border-top: 1px solid var(--border-color); font-size: 11px; color: var(--text-secondary);">
+            <div>
+                <span>UPLOAD DATE & TIME: {% if upload_info %}{{ today }}{% else %}-{% endif %}</span>
+                <span style="margin: 0 10px;">|</span>
+                <span>FILE SIZE: -</span>
+                <span style="margin: 0 10px;">|</span>
+                <span>STATUS: {% if upload_info %}<strong style="color: var(--success);">Active Dataset Loaded</strong>{% else %}Pending Upload / No File Active{% endif %}</span>
+            </div>
+            <div>Upload BTR file above or select from history below</div>
+        </div>
+    </div>
+
+    <!-- BTR Data Preview Accordion Card (Matching Image 4) -->
+    <div class="panel">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; cursor: pointer; user-select: none;" onclick="toggleCollapsibleSection('btrPreviewContent', 'previewArrow')">
+            <h2 style="margin: 0; font-size: 12px; font-weight: 800; color: var(--text-secondary); letter-spacing: 0.8px; display: flex; align-items: center; gap: 8px;">
+                <span id="previewArrow" style="font-size: 10px; font-weight: 900; color: var(--text-muted); transition: transform 0.15s ease;">▼</span> BTR DATA PREVIEW
+            </h2>
+            <button type="button" class="button-secondary" style="padding: 5px 16px; font-size: 11.5px; border-radius: 20px; background: var(--bg-card-sub); border: 1px solid var(--border-color); color: var(--text-primary); font-weight: 600;" onclick="event.stopPropagation(); toggleCollapsibleSection('btrPreviewContent', 'previewArrow')">Toggle Preview</button>
+        </div>
+        
+        <div id="btrPreviewContent">
+            <div class="table-card-wrapper" style="border: 1px solid var(--border-color); border-radius: var(--radius-md); overflow-x: auto; background: var(--bg-card-sub);">
+                <table class="btr-preview-table" style="width: 100%; border-collapse: collapse; min-width: 1000px;">
+                    <thead>
+                        <tr style="background: var(--table-header-bg); border-bottom: 1px solid var(--border-color);">
+                            <th style="padding: 14px 16px; font-size: 11px; font-weight: 800; color: var(--text-secondary); text-transform: uppercase; letter-spacing: 0.8px; text-align: left;">SALES OFFICE</th>
+                            <th style="padding: 14px 16px; font-size: 11px; font-weight: 800; color: var(--text-secondary); text-transform: uppercase; letter-spacing: 0.8px; text-align: center;">SOTY</th>
+                            <th style="padding: 14px 16px; font-size: 11px; font-weight: 800; color: var(--text-secondary); text-transform: uppercase; letter-spacing: 0.8px; text-align: center;">AGE SO</th>
+                            <th style="padding: 14px 16px; font-size: 11px; font-weight: 800; color: var(--text-secondary); text-transform: uppercase; letter-spacing: 0.8px; text-align: center;">AGE FI(2)</th>
+                            <th style="padding: 14px 16px; font-size: 11px; font-weight: 800; color: var(--text-secondary); text-transform: uppercase; letter-spacing: 0.8px; text-align: center;">TYPE OF CUSTOMER</th>
+                            <th style="padding: 14px 16px; font-size: 11px; font-weight: 800; color: var(--text-secondary); text-transform: uppercase; letter-spacing: 0.8px; text-align: center;">MATERIAL GROUP 5</th>
+                            <th style="padding: 14px 16px; font-size: 11px; font-weight: 800; color: var(--text-secondary); text-transform: uppercase; letter-spacing: 0.8px; text-align: center;">SO DATE</th>
+                            <th style="padding: 14px 16px; font-size: 11px; font-weight: 800; color: var(--text-secondary); text-transform: uppercase; letter-spacing: 0.8px; text-align: center;">REQ. DELI. DATE</th>
+                            <th style="padding: 14px 16px; font-size: 11px; font-weight: 800; color: var(--text-secondary); text-transform: uppercase; letter-spacing: 0.8px; text-align: center;">CO</th>
+                            <th style="padding: 14px 16px; font-size: 11px; font-weight: 800; color: var(--text-secondary); text-transform: uppercase; letter-spacing: 0.8px; text-align: center;">REMARKS</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% if preview_records %}
+                            {% for row in preview_records %}
+                            <tr style="border-bottom: 1px solid var(--border-color);">
+                                <td style="padding: 14px 16px; font-weight: 700; color: var(--text-primary); text-align: left;">{{ row.Sales_Office|default:'-' }}</td>
+                                <td style="padding: 14px 16px; font-weight: 700; color: var(--text-primary); text-align: center;">{{ row.SO_Type|default:'-' }}</td>
+                                <td style="padding: 14px 16px; font-weight: 700; color: var(--text-primary); text-align: center;">{{ row.Age_SO|default:'-' }}</td>
+                                <td style="padding: 14px 16px; font-weight: 700; color: var(--text-primary); text-align: center;">{{ row.Age_FI_2|default:'-' }}</td>
+                                <td style="padding: 14px 16px; font-weight: 700; color: var(--text-primary); text-align: center;">{{ row.Type_of_Customer|default:'-' }}</td>
+                                <td style="padding: 14px 16px; font-weight: 700; color: var(--text-primary); text-align: center;">{{ row.Material_group_5|default:'-' }}</td>
+                                <td style="padding: 14px 16px; font-weight: 700; color: var(--text-primary); text-align: center;">{{ row.SO_Date|default:'-' }}</td>
+                                <td style="padding: 14px 16px; font-weight: 700; color: var(--text-primary); text-align: center;">{{ row.Req_Deli_Date|default:'-' }}</td>
+                                <td style="padding: 14px 16px; font-weight: 700; color: var(--text-primary); text-align: center;">{{ row.SO_No|default:'-' }}</td>
+                                <td style="padding: 14px 16px; font-weight: 700; color: var(--text-primary); text-align: center;">{{ row.Remarks|default:'-' }}</td>
+                            </tr>
+                            {% endfor %}
+                        {% else %}
+                            <tr>
+                                <td colspan="10" style="text-align: center; padding: 32px; color: var(--text-muted); font-size: 13px;">
+                                    No active BTR dataset loaded. Upload a BTR report above to view preview records.
+                                </td>
+                            </tr>
+                        {% endif %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- BTR Upload History Card (Matching Image 3) -->
+    <div class="panel">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; cursor: pointer; user-select: none;" onclick="toggleCollapsibleSection('historyTableContent', 'historyArrow')">
+            <h2 id="historyHeaderTitle" style="margin: 0; font-size: 12px; font-weight: 800; color: var(--text-secondary); letter-spacing: 0.8px; display: flex; align-items: center; gap: 8px;">
+                <span id="historyArrow" style="font-size: 10px; font-weight: 900; color: var(--text-muted); transition: transform 0.15s ease;">▼</span> BTR UPLOAD HISTORY ({% if btr_uploads %}{{ btr_uploads|length }}{% else %}0{% endif %} REPORTS)
+            </h2>
+            <button type="button" class="button-secondary" style="padding: 4px 10px; font-size: 11px;" onclick="event.stopPropagation(); toggleCollapsibleSection('historyTableContent', 'historyArrow')">Toggle History</button>
+        </div>
+        
+        <div id="historyTableContent" style="overflow-x: auto;">
+            <table>
+                <thead>
+                    <tr>
+                        <th>FILENAME</th>
+                        <th>SHEET NAME</th>
+                        <th>UPLOAD DATE & TIME</th>
+                        <th>TOTAL RECORDS</th>
+                        <th>UNIQUE MATS</th>
+                        <th>STATUS</th>
+                        <th style="text-align: right;">ACTION</th>
+                    </tr>
+                </thead>
+                <tbody id="historyTableBody">
+                    {% if btr_uploads %}
+                        {% for u in btr_uploads %}
+                            <tr {% if u.upload_id == active_upload_id %}style="background: rgba(59, 130, 246, 0.12); border-left: 3px solid #3b82f6;"{% endif %}>
+                                <td><strong style="color: var(--text-primary);">{{ u.filename }}</strong></td>
+                                <td>{{ u.sheet_name|default:"CFD COS" }}</td>
+                                <td>{{ u.uploaded_at_fmt }}</td>
+                                <td>{{ u.total_records }}</td>
+                                <td>{{ u.unique_planning_mats|length }}</td>
+                                <td>
+                                    {% if u.upload_id == active_upload_id %}
+                                        <span class="record-badge badge-records-green" style="font-weight: 800;">✓ ACTIVE DATASET</span>
+                                    {% else %}
+                                        <span class="record-badge badge-records-green">✓ VALIDATED</span>
+                                    {% endif %}
+                                </td>
+                                <td style="text-align: right; white-space: nowrap;">
+                                    {% if u.upload_id == active_upload_id %}
+                                        <span class="button-secondary" style="padding: 4px 10px; font-size: 11px; background: rgba(34, 197, 94, 0.15); color: var(--success); border-color: rgba(34, 197, 94, 0.3); font-weight: 700; cursor: default; display: inline-block;">✓ Active</span>
+                                        <a href="{% url 'clear_btr_upload' %}" class="button-secondary" style="padding: 4px 10px; font-size: 11px; text-decoration: none; display: inline-block; color: var(--danger); border-color: rgba(239, 68, 68, 0.4); font-weight: 700;">Not Use Active Dataset</a>
+                                    {% else %}
+                                        <a href="{% url 'select_btr_upload' u.upload_id %}" class="button" style="padding: 4px 10px; font-size: 11px; text-decoration: none; display: inline-block; background: #3b82f6; border-color: #3b82f6; font-weight: 700;">Make Active</a>
+                                    {% endif %}
+                                    <button type="button" class="button-secondary" style="padding: 4px 10px; font-size: 11px; display: inline-block;" onclick="openBtrPreviewModal('{{ u.filename|escapejs }}', '{{ u.sheet_name|default:"CFD COS"|escapejs }}', '{{ u.total_records }}', '76', '{{ u.unique_planning_mats|length }}', '{{ u.uploaded_at_fmt|escapejs }}');">Preview</button>
+                                    <form method="post" action="{% url 'delete_btr_upload' u.upload_id %}" style="display: inline;" onsubmit="return confirm('Are you sure you want to delete this report from history?');">
+                                        {% csrf_token %}
+                                        <button class="button-secondary" style="padding: 4px 10px; font-size: 11px; color: var(--danger); border-color: rgba(239, 68, 68, 0.3);" type="submit">Delete</button>
+                                    </form>
+                                </td>
+                            </tr>
+                        {% endfor %}
+                    {% else %}
+                        <tr class="empty-history-tr">
+                            <td colspan="7" style="text-align: center; padding: 32px; color: var(--text-muted); font-size: 13px;">
+                                No BTR reports in upload history. Upload a BTR report above to get started.
+                            </td>
+                        </tr>
+                    {% endif %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<script>
+    function switchLeftPanelTab(tabName) {
+        const tabUpload = document.getElementById('tabContentUpload');
+        const tabActive = document.getElementById('tabContentActive');
+        const btnUpload = document.getElementById('tabBtnUpload');
+        const btnActive = document.getElementById('tabBtnActive');
+
+        if (tabName === 'upload') {
+            if (tabUpload) tabUpload.style.display = 'block';
+            if (tabActive) tabActive.style.display = 'none';
+            if (btnUpload) {
+                btnUpload.style.background = '#3b82f6';
+                btnUpload.style.color = '#ffffff';
+                btnUpload.style.borderColor = '#3b82f6';
+            }
+            if (btnActive) {
+                btnActive.style.background = 'var(--bg-card-sub)';
+                btnActive.style.color = 'var(--text-secondary)';
+                btnActive.style.borderColor = 'var(--border-color)';
+            }
+        } else {
+            if (tabUpload) tabUpload.style.display = 'none';
+            if (tabActive) tabActive.style.display = 'block';
+            if (btnActive) {
+                btnActive.style.background = '#3b82f6';
+                btnActive.style.color = '#ffffff';
+                btnActive.style.borderColor = '#3b82f6';
+            }
+            if (btnUpload) {
+                btnUpload.style.background = 'var(--bg-card-sub)';
+                btnUpload.style.color = 'var(--text-secondary)';
+                btnUpload.style.borderColor = 'var(--border-color)';
+            }
+        }
+    }
+
+    function scrollToHistoryTable() {
+        const historySection = document.getElementById('historyTableContent');
+        if (historySection) {
+            historySection.style.display = 'block';
+            const arrow = document.getElementById('historyArrow');
+            if (arrow) arrow.textContent = '▼';
+            historySection.scrollIntoView({ behavior: 'smooth' });
+        }
+    }
+
+    function toggleCollapsibleSection(contentId, arrowId) {
+        const content = document.getElementById(contentId);
+        const arrow = document.getElementById(arrowId);
+        if (!content) return;
+        if (content.style.display === 'none') {
+            content.style.display = 'block';
+            if (arrow) arrow.textContent = '▼';
+        } else {
+            content.style.display = 'none';
+            if (arrow) arrow.textContent = '▶';
+        }
+    }
+</script>
+
+
+<!-- ========================================================================= -->
+<!-- STEP 2: PLANNING MATERIAL SELECTION (Image 4) -->
+<!-- ========================================================================= -->
+<div id="stepView2" style="{% if active_step != 2 %}display: none;{% endif %}">
+    <!-- Top Split Section -->
+    <div class="grid2" style="margin-bottom: 22px;">
+        <!-- Left Card: Unique Planning Materials -->
+        <div class="panel" style="margin-bottom: 0;">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 14px;">
+                <h2 style="margin: 0; font-size: 12px; font-weight: 800; color: var(--text-secondary); letter-spacing: 0.8px;">
+                    UNIQUE PLANNING MATERIALS ({% if upload_info %}{{ upload_info.planning_materials|length }}{% else %}38{% endif %})
+                </h2>
+                <a href="javascript:void(0)" onclick="clearMaterialSelection()" style="font-size: 11px; color: var(--text-muted); text-decoration: none; font-weight: 600;">Clear Selection</a>
+            </div>
+
+            <input type="text" id="searchMaterialInput" placeholder="Search Planning Mat (e.g. AL_100X100)..." class="search-input" onkeyup="filterMaterialList();">
+
+            <form method="post" action="{% url 'generate_btr_campaign' %}" id="generateCampaignForm" style="margin-top: 12px;">
+                {% csrf_token %}
+                <div class="materials-list-container" id="materialsListContainer">
+                    {% if upload_info and upload_info.planning_materials %}
+                        {% for mat in upload_info.planning_materials %}
+                            <div class="material-item-row {% if forloop.first %}selected{% endif %}" onclick="selectMaterial(this, '{% if mat.name %}{{ mat.name }}{% elif mat.mat_name %}{{ mat.mat_name }}{% else %}{{ mat }}{% endif %}', {% if mat.row_count %}{{ mat.row_count }}{% elif mat.count %}{{ mat.count }}{% else %}0{% endif %}, {{ upload_info.row_count }});">
+                                <div class="material-item-left">
+                                    <div class="radio-circle">
+                                        <div class="radio-inner-dot"></div>
+                                    </div>
+                                    <span class="material-name">{% if mat.name %}{{ mat.name }}{% elif mat.mat_name %}{{ mat.mat_name }}{% else %}{{ mat }}{% endif %}</span>
+                                </div>
+                                <span class="record-badge {% if forloop.first %}badge-records-green{% else %}badge-records-orange{% endif %}">
+                                    {% if mat.row_count %}{{ mat.row_count }}{% elif mat.count %}{{ mat.count }}{% else %}0{% endif %} RECORDS
+                                </span>
+                            </div>
+                        {% endfor %}
+                    {% else %}
+                        <!-- Demo fallback matching Image 4 -->
+                        <div class="material-item-row selected" onclick="selectMaterial(this, 'AL_100X100', 197, 4515);">
+                            <div class="material-item-left"><div class="radio-circle"><div class="radio-inner-dot"></div></div><span class="material-name">AL_100X100</span></div>
+                            <span class="record-badge badge-records-green">197 RECORDS</span>
+                        </div>
+                        <div class="material-item-row" onclick="selectMaterial(this, 'AL_110X110', 536, 4515);">
+                            <div class="material-item-left"><div class="radio-circle"><div class="radio-inner-dot"></div></div><span class="material-name">AL_110X110</span></div>
+                            <span class="record-badge badge-records-orange">536 RECORDS</span>
+                        </div>
+                        <div class="material-item-row" onclick="selectMaterial(this, 'AL_120X120', 277, 4515);">
+                            <div class="material-item-left"><div class="radio-circle"><div class="radio-inner-dot"></div></div><span class="material-name">AL_120X120</span></div>
+                            <span class="record-badge badge-records-orange">277 RECORDS</span>
+                        </div>
+                        <div class="material-item-row" onclick="selectMaterial(this, 'AL_126X126', 43, 4515);">
+                            <div class="material-item-left"><div class="radio-circle"><div class="radio-inner-dot"></div></div><span class="material-name">AL_126X126</span></div>
+                            <span class="record-badge badge-records-orange">43 RECORDS</span>
+                        </div>
+                        <div class="material-item-row" onclick="selectMaterial(this, 'AL_130X130', 101, 4515);">
+                            <div class="material-item-left"><div class="radio-circle"><div class="radio-inner-dot"></div></div><span class="material-name">AL_130X130</span></div>
+                            <span class="record-badge badge-records-orange">101 RECORDS</span>
+                        </div>
+                        <div class="material-item-row" onclick="selectMaterial(this, 'AL_150X150', 702, 4515);">
+                            <div class="material-item-left"><div class="radio-circle"><div class="radio-inner-dot"></div></div><span class="material-name">AL_150X150</span></div>
+                            <span class="record-badge badge-records-orange">702 RECORDS</span>
+                        </div>
+                        <div class="material-item-row" onclick="selectMaterial(this, 'AL_180X180', 155, 4515);">
+                            <div class="material-item-left"><div class="radio-circle"><div class="radio-inner-dot"></div></div><span class="material-name">AL_180X180</span></div>
+                            <span class="record-badge badge-records-orange">155 RECORDS</span>
+                        </div>
+                        <div class="material-item-row" onclick="selectMaterial(this, 'AL_200X200', 513, 4515);">
+                            <div class="material-item-left"><div class="radio-circle"><div class="radio-inner-dot"></div></div><span class="material-name">AL_200X200</span></div>
+                            <span class="record-badge badge-records-orange">513 RECORDS</span>
+                        </div>
+                    {% endif %}
+                </div>
+
+                <input type="hidden" name="planning_material" id="selectedPlanningMaterialInput" value="{% if upload_info and upload_info.planning_materials %}{% if upload_info.planning_materials.0.name %}{{ upload_info.planning_materials.0.name }}{% elif upload_info.planning_materials.0.mat_name %}{{ upload_info.planning_materials.0.mat_name }}{% else %}{{ upload_info.planning_materials.0 }}{% endif %}{% else %}AL_100X100{% endif %}">
+            </form>
+        </div>
+
+        <!-- Right Card: Active Selection Overview -->
+        <div class="panel" style="margin-bottom: 0; display: flex; flex-direction: column; justify-content: space-between;">
+            <div>
+                <h2 style="font-size: 12px; font-weight: 800; color: var(--text-secondary); letter-spacing: 0.8px; margin-bottom: 16px;">
+                    ACTIVE SELECTION OVERVIEW
+                </h2>
+
+                <div class="active-selection-banner">
+                    <div class="active-selection-eyebrow">SELECTED PLANNING MATERIAL</div>
+                    <div class="active-selection-title" id="selectedMaterialHeading">
+                        {% if upload_info %}{% if upload_info.planning_materials.0.name %}{{ upload_info.planning_materials.0.name }}{% elif upload_info.planning_materials.0.mat_name %}{{ upload_info.planning_materials.0.mat_name }}{% else %}{{ upload_info.planning_materials.0 }}{% endif %}{% else %}AL_100X100{% endif %}
+                    </div>
+                    <div class="active-selection-sub" id="selectedMaterialSubtext">
+                        Filtered {% if upload_info %}{% if upload_info.planning_materials.0.row_count %}{{ upload_info.planning_materials.0.row_count }}{% elif upload_info.planning_materials.0.count %}{{ upload_info.planning_materials.0.count }}{% else %}0{% endif %}{% else %}197{% endif %} records from uploaded BTR report.
+                    </div>
+                </div>
+
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin-bottom: 16px;">
+                    <div style="background: var(--bg-card-sub); border: 1px solid var(--border-color); border-radius: var(--radius-md); padding: 16px;">
+                        <div style="font-size: 24px; font-weight: 800; color: var(--text-primary);" id="matchingRecordsCount">
+                            {% if upload_info %}{% if upload_info.planning_materials.0.row_count %}{{ upload_info.planning_materials.0.row_count }}{% elif upload_info.planning_materials.0.count %}{{ upload_info.planning_materials.0.count }}{% else %}0{% endif %}{% else %}197{% endif %}
+                        </div>
+                        <div style="font-size: 10px; font-weight: 700; color: var(--text-secondary); letter-spacing: 0.5px; margin-top: 4px;">MATCHING RECORDS</div>
+                    </div>
+
+                    <div style="background: var(--bg-card-sub); border: 1px solid var(--border-color); border-radius: var(--radius-md); padding: 16px;">
+                        <div style="font-size: 24px; font-weight: 800; color: var(--text-primary);" id="totalBtrRecordsCount">
+                            {% if upload_info %}{{ upload_info.row_count }}{% else %}4515{% endif %}
+                        </div>
+                        <div style="font-size: 10px; font-weight: 700; color: var(--text-secondary); letter-spacing: 0.5px; margin-top: 4px;">TOTAL BTR RECORDS</div>
+                    </div>
+                </div>
+
+                <!-- Additional BTR Sheet Summary Cards (Image 2 Metrics) -->
+                <div style="font-size: 11px; font-weight: 800; color: #3b82f6; text-transform: uppercase; letter-spacing: 0.8px; margin-bottom: 10px;">
+                    BTR SHEET METRICS SUMMARY
+                </div>
+
+                <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin-bottom: 20px;">
+                    <!-- Card 1: RM Section -->
+                    <div style="background: var(--bg-card-sub); border: 1px solid var(--border-color); border-radius: var(--radius-md); padding: 12px 14px;">
+                        <div style="font-size: 18px; font-weight: 800; color: #ff7500;" id="cardRmType">
+                            {{ active_mat_summary.rm|default:"Billet165" }}
+                        </div>
+                        <div style="font-size: 9px; font-weight: 700; color: var(--text-secondary); letter-spacing: 0.5px; margin-top: 2px;">RAW MATERIAL (RM)</div>
+                    </div>
+
+                    <!-- Card 2: Bal Roll Qty -->
+                    <div style="background: var(--bg-card-sub); border: 1px solid var(--border-color); border-radius: var(--radius-md); padding: 12px 14px;">
+                        <div style="font-size: 18px; font-weight: 800; color: #3b82f6;" id="cardBalRollQty">
+                            {{ active_mat_summary.bal_roll_qty|default:"687" }}
+                        </div>
+                        <div style="font-size: 9px; font-weight: 700; color: var(--text-secondary); letter-spacing: 0.5px; margin-top: 2px;">BAL ROLL QTY (BTR)</div>
+                    </div>
+
+                    <!-- Card 3: Clear BTR -->
+                    <div style="background: var(--bg-card-sub); border: 1px solid var(--border-color); border-radius: var(--radius-md); padding: 12px 14px;">
+                        <div style="font-size: 18px; font-weight: 800; color: var(--success);" id="cardClearBtr">
+                            {{ active_mat_summary.clear_btr|default:"382" }}
+                        </div>
+                        <div style="font-size: 9px; font-weight: 700; color: var(--text-secondary); letter-spacing: 0.5px; margin-top: 2px;">CLEAR BTR</div>
+                    </div>
+
+                    <!-- Card 4: Total Stock -->
+                    <div style="background: var(--bg-card-sub); border: 1px solid var(--border-color); border-radius: var(--radius-md); padding: 12px 14px;">
+                        <div style="font-size: 18px; font-weight: 800; color: #eab308;" id="cardTotalStock">
+                            {{ active_mat_summary.total_stock|default:"404" }}
+                        </div>
+                        <div style="font-size: 9px; font-weight: 700; color: var(--text-secondary); letter-spacing: 0.5px; margin-top: 2px;">TOTAL STOCK</div>
+                    </div>
+
+                    <!-- Card 5: Bal2PGI -->
+                    <div style="background: var(--bg-card-sub); border: 1px solid var(--border-color); border-radius: var(--radius-md); padding: 12px 14px;">
+                        <div style="font-size: 18px; font-weight: 800; color: var(--text-primary);" id="cardBal2Pgi">
+                            {{ active_mat_summary.bal2pgi|default:"1047" }}
+                        </div>
+                        <div style="font-size: 9px; font-weight: 700; color: var(--text-secondary); letter-spacing: 0.5px; margin-top: 2px;">BAL2PGI</div>
+                    </div>
+
+                    <!-- Card 6: Export BTR -->
+                    <div style="background: var(--bg-card-sub); border: 1px solid var(--border-color); border-radius: var(--radius-md); padding: 12px 14px;">
+                        <div style="font-size: 18px; font-weight: 800; color: #a855f7;" id="cardExportBtr">
+                            {{ active_mat_summary.export_btr|default:"2" }}
+                        </div>
+                        <div style="font-size: 9px; font-weight: 700; color: var(--text-secondary); letter-spacing: 0.5px; margin-top: 2px;">EXPORT BTR</div>
+                    </div>
+                </div>
+            </div>
+
+            {% if upload_info %}
+                <button type="submit" form="generateCampaignForm" class="button" style="width: 100%; padding: 14px; font-size: 14px;">Generate Camp Plan →</button>
+            {% else %}
+                <button type="button" class="button" style="width: 100%; padding: 14px; font-size: 14px;" onclick="switchStep(3);">Generate Camp Plan →</button>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- Filtered Records Preview Table (Image 4) -->
+    <div class="panel">
+        <h2 style="font-size: 12px; font-weight: 800; color: var(--text-secondary); letter-spacing: 0.8px; margin-bottom: 16px;">
+            FILTERED RECORDS PREVIEW (TOP 10 OF <span id="previewFilteredCount">197</span>)
+        </h2>
+
+        <div style="overflow-x: auto;">
+            <table>
+                <thead>
+                    <tr>
+                        <th>SALES OFFICE</th>
+                        <th>SOTY</th>
+                        <th>AGE SO</th>
+                        <th>AGE FE21</th>
+                        <th>TYPE OF CUSTOMER</th>
+                        <th>MATERIAL GROUP S</th>
+                        <th>SO DATE</th>
+                        <th>REQ. DELI. DATE</th>
+                        <th>CO</th>
+                        <th>REMARKS</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>Regional Off Kolkata</td>
+                        <td>ZMTO</td>
+                        <td>3</td>
+                        <td>-</td>
+                        <td>NOVTLT</td>
+                        <td>-</td>
+                        <td>21-08-2026</td>
+                        <td>21-08-2026</td>
+                        <td>6005016595</td>
+                        <td>NTLT-BIS</td>
+                    </tr>
+                    <tr>
+                        <td>Regional Off Chennai</td>
+                        <td>ZMTO</td>
+                        <td>5</td>
+                        <td>2</td>
+                        <td>NOVTLT</td>
+                        <td>From Rolling</td>
+                        <td>19-08-2026</td>
+                        <td>17-08-2026</td>
+                        <td>6005016383</td>
+                        <td>NTLT-BIS</td>
+                    </tr>
+                    <tr>
+                        <td>Ahmedabad Sales off</td>
+                        <td>ZMTO</td>
+                        <td>6</td>
+                        <td>4</td>
+                        <td>TLT</td>
+                        <td>From Rolling</td>
+                        <td>18-08-2026</td>
+                        <td>20-08-2026</td>
+                        <td>6005016219</td>
+                        <td>TLT-ASTM-S960</td>
+                    </tr>
+                    <tr>
+                        <td>Bhubaneswar Sales Off</td>
+                        <td>ZCAP</td>
+                        <td>14</td>
+                        <td>-</td>
+                        <td>NOVTLT</td>
+                        <td>-</td>
+                        <td>10-08-2026</td>
+                        <td>10-09-2026</td>
+                        <td>10073210320</td>
+                        <td>NTLT-BIS-Angul</td>
+                    </tr>
+                    <tr>
+                        <td>Export Sales Office</td>
+                        <td>ZEXO</td>
+                        <td>20</td>
+                        <td>-</td>
+                        <td>NOVTLT</td>
+                        <td>From Rolling</td>
+                        <td>04-08-2026</td>
+                        <td>-</td>
+                        <td>00370520510</td>
+                        <td>NTLT-BSEN EXPORT</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+
+<!-- ========================================================================= -->
+<!-- STEP 3: CAMP PLAN READY (Image 5) -->
+<!-- ========================================================================= -->
+<div id="stepView3" style="{% if active_step != 3 %}display: none;{% endif %}">
+    <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 20px;">
+        <div>
+            <div style="font-size: 11px; letter-spacing: 1.5px; font-weight: 800; color: #3b82f6; text-transform: uppercase; margin-bottom: 4px;">
+                STEP 4 OF 8 — CAMPAIGN PLAN
+            </div>
+            <h1 style="font-size: 24px; font-weight: 800; color: var(--text-primary); margin-bottom: 4px;">Camp Plan Ready</h1>
+            <p style="font-size: 13px; color: var(--text-secondary);">Mapped BTR dataset to exact CAMP PLAN FORMAT (Column A - BX) with calculated Wt, Pc & No. of Pcs.</p>
+        </div>
+
+        <div style="display: flex; gap: 10px;">
+            {% if campaigns and campaigns.0 %}
+                <a href="{% url 'download_btr_campaign' campaigns.0.id %}" class="button-secondary">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>
+                    Export Camp Plan Excel
+                </a>
+            {% else %}
+                <button type="button" class="button-secondary" onclick="alert('Exporting generated Camp Plan Excel file...');">Export Camp Plan Excel</button>
+            {% endif %}
+
+            <button type="button" class="button" onclick="switchStep(4);">Continue to Rolling Plan →</button>
+        </div>
+    </div>
+
+    <!-- Summary Badges Bar (5 Horizontal Badges) -->
+    <div style="display: grid; grid-template-columns: repeat(6, 1fr); gap: 12px; margin-bottom: 20px;">
+        <!-- Badge 1 -->
+        <div style="background: var(--bg-card-sub); border: 1px solid var(--border-color); border-radius: var(--radius-md); padding: 12px 14px; display: flex; align-items: center; gap: 10px;">
+            <div style="width: 24px; height: 24px; border-radius: 50%; background: var(--success-light); color: var(--success); display: flex; align-items: center; justify-content: center; flex-shrink: 0;">✓</div>
+            <div>
+                <div style="font-size: 14px; font-weight: 800; color: var(--text-primary);">AL_100X100</div>
+                <div style="font-size: 9px; font-weight: 700; color: var(--text-secondary); text-transform: uppercase;">PLANNING MATERIAL</div>
+            </div>
+        </div>
+
+        <!-- Badge 2 -->
+        <div style="background: var(--bg-card-sub); border: 1px solid var(--border-color); border-radius: var(--radius-md); padding: 12px 14px; display: flex; align-items: center; gap: 10px;">
+            <div style="width: 24px; height: 24px; border-radius: 50%; background: var(--success-light); color: var(--success); display: flex; align-items: center; justify-content: center; flex-shrink: 0;">✓</div>
+            <div>
+                <div style="font-size: 14px; font-weight: 800; color: var(--text-primary);">197</div>
+                <div style="font-size: 9px; font-weight: 700; color: var(--text-secondary); text-transform: uppercase;">TOTAL INPUT RECORDS</div>
+            </div>
+        </div>
+
+        <!-- Badge 3 -->
+        <div style="background: var(--bg-card-sub); border: 1px solid var(--border-color); border-radius: var(--radius-md); padding: 12px 14px; display: flex; align-items: center; gap: 10px;">
+            <div style="width: 24px; height: 24px; border-radius: 50%; background: var(--success-light); color: var(--success); display: flex; align-items: center; justify-content: center; flex-shrink: 0;">✓</div>
+            <div>
+                <div style="font-size: 14px; font-weight: 800; color: var(--text-primary);">85</div>
+                <div style="font-size: 9px; font-weight: 700; color: var(--text-secondary); text-transform: uppercase;">VALID CAMP PLAN RECORDS</div>
+            </div>
+        </div>
+
+        <!-- Badge 4 -->
+        <div style="background: var(--bg-card-sub); border: 1px solid var(--border-color); border-radius: var(--radius-md); padding: 12px 14px; display: flex; align-items: center; gap: 10px;">
+            <div style="width: 24px; height: 24px; border-radius: 50%; background: rgba(239,68,68,0.15); color: #ef4444; display: flex; align-items: center; justify-content: center; flex-shrink: 0;">!</div>
+            <div>
+                <div style="font-size: 14px; font-weight: 800; color: var(--text-primary);">112</div>
+                <div style="font-size: 9px; font-weight: 700; color: var(--text-secondary); text-transform: uppercase;">REMOVED RECORDS</div>
+            </div>
+        </div>
+
+        <!-- Badge 5 -->
+        <div style="background: var(--bg-card-sub); border: 1px solid var(--border-color); border-radius: var(--radius-md); padding: 12px 14px; display: flex; align-items: center; gap: 10px;">
+            <div style="width: 24px; height: 24px; border-radius: 50%; background: var(--accent-blue-bg); color: #3b82f6; display: flex; align-items: center; justify-content: center; flex-shrink: 0;">📊</div>
+            <div>
+                <div style="font-size: 14px; font-weight: 800; color: var(--text-primary);">584.915 MT</div>
+                <div style="font-size: 9px; font-weight: 700; color: var(--text-secondary); text-transform: uppercase;">TOTAL BTR QUANTITY</div>
+            </div>
+        </div>
+
+        <!-- Badge 6 -->
+        <div style="background: var(--bg-card-sub); border: 1px solid var(--border-color); border-radius: var(--radius-md); padding: 12px 14px; display: flex; align-items: center; gap: 10px;">
+            <div style="width: 24px; height: 24px; border-radius: 50%; background: rgba(255,117,0,0.15); color: #ff7500; display: flex; align-items: center; justify-content: center; flex-shrink: 0;">📦</div>
+            <div>
+                <div style="font-size: 14px; font-weight: 800; color: var(--text-primary);">4192.36</div>
+                <div style="font-size: 9px; font-weight: 700; color: var(--text-secondary); text-transform: uppercase;">TOTAL NO. OF PCS.</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Notification Banner (Brownish/Amber) -->
+    <div class="alert-excluded-banner">
+        <div>
+            <strong>Excluded Records Notice:</strong> 112 record(s) excluded from Camp Plan (due to no valid length or No. of Pcs. < 0.8).
+        </div>
+        <a href="javascript:void(0)" class="alert-excluded-link" onclick="alert('112 records were filtered due to zero length or piece count < 0.8');">► View excluded record details</a>
+    </div>
+
+    <!-- Camp Plan Output Table Card -->
+    <div class="panel">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">
+            <div style="display: flex; align-items: center; gap: 10px;">
+                <h2 style="margin: 0; font-size: 12px; font-weight: 800; color: var(--text-secondary); letter-spacing: 0.8px;">
+                    CAMP PLAN OUTPUT TABLE (COLUMNS A — BX)
+                </h2>
+                <span class="record-badge badge-records-green">85 ROWS</span>
+            </div>
+
+            <div style="display: flex; gap: 10px; align-items: center;">
+                <input type="text" placeholder="Search Camp Plan..." class="search-input" style="width: 220px; padding: 6px 12px; font-size: 12px;">
+                <button class="button-secondary" style="padding: 6px 12px; font-size: 12px;">Export Excel</button>
+            </div>
+        </div>
+
+        <div style="overflow-x: auto;">
+            <table>
+                <thead>
+                    <tr>
+                        <th>A — SO MO</th>
+                        <th>B — SO TYPE</th>
+                        <th>C — SALES OFFICE</th>
+                        <th>D — SO NO.</th>
+                        <th>E — SO ITEM</th>
+                        <th>F — SO DATE</th>
+                        <th>H — AGE</th>
+                        <th>H — MATERIAL</th>
+                        <th>I — SOLD TO PARTY NAME</th>
+                        <th>J — SHIP TO CITY</th>
+                        <th>K — SHIP TO PARTY</th>
+                        <th>L — SOLD TO CITY</th>
+                        <th>M — SEC WT</th>
+                        <th>N — THICK MM</th>
+                        <th>O — GRADE</th>
+                        <th>P — CUTTING LENGTH</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>1</td>
+                        <td>ZMTO</td>
+                        <td>Regional Off Kolkata</td>
+                        <td>6005016595</td>
+                        <td>130</td>
+                        <td>21-08-2026</td>
+                        <td>3</td>
+                        <td>AL_E250B0(N)_100X100X10.9-13</td>
+                        <td>THE BRAITHWAITE BURN AND JESSOP</td>
+                        <td>ROPAR</td>
+                        <td>P & R INFRAPROJECTS LIMITED</td>
+                        <td>BALLIA</td>
+                        <td>15.04</td>
+                        <td>10</td>
+                        <td>IS2062 E250B0</td>
+                        <td>10.0</td>
+                    </tr>
+                    <tr>
+                        <td>2</td>
+                        <td>ZMTO</td>
+                        <td>Regional Off Chennai</td>
+                        <td>6005016383</td>
+                        <td>30</td>
+                        <td>19-08-2026</td>
+                        <td>5</td>
+                        <td>AL_E250JR_100X100X8.9-13</td>
+                        <td>THE RAMCO CEMENTS LIMITED</td>
+                        <td>KURNOOL</td>
+                        <td>THE RAMCO CEMENTS LIMITED</td>
+                        <td>KURNOOL</td>
+                        <td>12.1</td>
+                        <td>8</td>
+                        <td>E250BR</td>
+                        <td>12.0</td>
+                    </tr>
+                    <tr>
+                        <td>3</td>
+                        <td>ZMTO</td>
+                        <td>Ahmedabad Sales off</td>
+                        <td>6005016219</td>
+                        <td>2370</td>
+                        <td>18-08-2026</td>
+                        <td>6</td>
+                        <td>AI_ASTMA572(GR-60) 100X100X7.9-13</td>
+                        <td>KALPATARU PROJECTS INTERNATIONAL LIMITED</td>
+                        <td>GANDHINAGAR</td>
+                        <td>KALPATARU PROJECTS INTERNATIONAL LIMITED</td>
+                        <td>GANDHINAGAR</td>
+                        <td>10.7</td>
+                        <td>7</td>
+                        <td>ASTMA572GR60</td>
+                        <td>11.0</td>
+                    </tr>
+                    <tr>
+                        <td>4</td>
+                        <td>ZMTO</td>
+                        <td>Regional Off Kolkata</td>
+                        <td>6005018595</td>
+                        <td>120</td>
+                        <td>21-08-2026</td>
+                        <td>3</td>
+                        <td>AL_E250B0(N)_100X100X8_9-13</td>
+                        <td>THE BRAITHWAITE BURN AND JESSOP</td>
+                        <td>ROPAR</td>
+                        <td>P & R INFRAPROJECTS LIMITED</td>
+                        <td>BALLIA</td>
+                        <td>12.15</td>
+                        <td>8</td>
+                        <td>IS2062 E250B0</td>
+                        <td>10.0</td>
+                    </tr>
+                    <tr>
+                        <td>5</td>
+                        <td>ZMTO</td>
+                        <td>RO Ludhiana-Chd'garh</td>
+                        <td>6005015878</td>
+                        <td>20</td>
+                        <td>14-08-2026</td>
+                        <td>10</td>
+                        <td>AL_E250BR(N)_100X100X8_9-13</td>
+                        <td>SPS CONSTRUCTION INDIA PVT. LTD.</td>
+                        <td>YAMUNA NAGAR</td>
+                        <td>GISF ENGINEERING PRIVATE LIMITED</td>
+                        <td>PATNA</td>
+                        <td>12.15</td>
+                        <td>8</td>
+                        <td>E250BR</td>
+                        <td>10.7</td>
+                    </tr>
+                    <tr>
+                        <td>6</td>
+                        <td>ZMTO</td>
+                        <td>Hyderabad Sales Off</td>
+                        <td>6005014686</td>
+                        <td>10</td>
+                        <td>03-08-2026</td>
+                        <td>21</td>
+                        <td>AL_E250A(N)_100X100X10.9-13</td>
+                        <td>KIRBY BUILDING SYSTEMS & STRUCTURES</td>
+                        <td>PANCHMAHALS</td>
+                        <td>KIRBY BUILDING SYSTEMS & STRUCTURES</td>
+                        <td>PANCHMAHALS</td>
+                        <td>15.04</td>
+                        <td>10</td>
+                        <td>E250A</td>
+                        <td>12.0</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<!-- ========================================================================= -->
+<!-- STEP 4: ROLLING PLAN (Optional / Placeholder view) -->
+<!-- ========================================================================= -->
+<div id="stepView4" style="display: none;">
+    <div style="margin-bottom: 20px;">
+        <div style="font-size: 11px; letter-spacing: 1.5px; font-weight: 800; color: #3b82f6; text-transform: uppercase; margin-bottom: 4px;">
+            STEP 8 OF 8 — ROLLING PLAN
+        </div>
+        <h1 style="font-size: 24px; font-weight: 800; color: var(--text-primary); margin-bottom: 4px;">Rolling Plan Ready</h1>
+        <p style="font-size: 13px; color: var(--text-secondary);">Macro-enabled rolling plan generated with cooling bed length checks.</p>
+    </div>
+
+    <div class="panel" style="text-align: center; padding: 40px;">
+        <h3 style="font-size: 16px; color: var(--text-primary); margin-bottom: 8px;">Rolling Plan Module</h3>
+        <p style="font-size: 13px; color: var(--text-secondary); margin-bottom: 20px;">Select a campaign from history in Step 1 to generate and download its full rolling plan workbook.</p>
+        <button class="button" onclick="switchStep(1);">Back to BTR Upload & History →</button>
+    </div>
+</div>
+
+<!-- Interface scripts for Step switching and material selection -->
+<script>
+    function updateFileName(input) {
+        if (input.files && input.files[0]) {
+            document.getElementById('dropzoneLabelText').textContent = input.files[0].name;
+        }
+    }
+
+    function toggleElement(id) {
+        const el = document.getElementById(id);
+        if (el) {
+            el.style.display = el.style.display === 'none' ? 'block' : 'none';
+        }
+    }
+
+    function switchStep(stepNum) {
+        // Hide all step views
+        [1, 2, 3, 4].forEach(n => {
+            const view = document.getElementById('stepView' + n);
+            const nav = document.getElementById('stepNav' + n);
+            if (view) view.style.display = 'none';
+            if (nav) nav.classList.remove('active');
+        });
+
+        // Show target step view
+        const targetView = document.getElementById('stepView' + stepNum);
+        const targetNav = document.getElementById('stepNav' + stepNum);
+        if (targetView) targetView.style.display = 'block';
+        if (targetNav) targetNav.classList.add('active');
+
+        // Update top header title
+        const titleText = document.getElementById('pageTitleText');
+        if (titleText) {
+            if (stepNum === 1) titleText.textContent = 'BTR Input — Upload BTR report and validate CFD COS sheet';
+            else if (stepNum === 2) titleText.textContent = 'Planning Material Selection — Select target Planning Mat from BTR dataset';
+            else if (stepNum === 3) titleText.textContent = 'Camp Plan Ready — Authoritative CAMP PLAN FORMAT structure generated';
+            else if (stepNum === 4) titleText.textContent = 'Rolling Plan Ready — Authoritative Rolling Plan structure generated';
+        }
+    }
+
+    function selectMaterial(rowEl, matName, matchCount, totalCount) {
+        // Deselect all
+        document.querySelectorAll('.material-item-row').forEach(row => {
+            row.classList.remove('selected');
+            const badge = row.querySelector('.record-badge');
+            if (badge) {
+                badge.className = 'record-badge badge-records-orange';
+            }
+        });
+
+        // Select clicked row
+        rowEl.classList.add('selected');
+        const badge = rowEl.querySelector('.record-badge');
+        if (badge) badge.className = 'record-badge badge-records-green';
+
+        // Update form input and header
+        const hiddenInput = document.getElementById('selectedPlanningMaterialInput');
+        if (hiddenInput) hiddenInput.value = matName;
+
+        const heading = document.getElementById('selectedMaterialHeading');
+        if (heading) heading.textContent = matName;
+
+        const subtext = document.getElementById('selectedMaterialSubtext');
+        if (subtext) subtext.textContent = 'Filtered ' + matchCount + ' records from uploaded BTR report.';
+
+        const matchEl = document.getElementById('matchingRecordsCount');
+        if (matchEl) matchEl.textContent = matchCount;
+
+        const totalEl = document.getElementById('totalBtrRecordsCount');
+        if (totalEl) totalEl.textContent = totalCount;
+
+        const previewCount = document.getElementById('previewFilteredCount');
+        if (previewCount) previewCount.textContent = matchCount;
+
+        // Dynamic BTR summary map card updates
+        try {
+            const summaryMap = {{ btr_summary_json|safe|default:'{}' }};
+            const s = summaryMap[matName] || {};
+            const rmEl = document.getElementById('cardRmType');
+            const balRollEl = document.getElementById('cardBalRollQty');
+            const clearBtrEl = document.getElementById('cardClearBtr');
+            const totalStockEl = document.getElementById('cardTotalStock');
+            const bal2PgiEl = document.getElementById('cardBal2Pgi');
+            const exportBtrEl = document.getElementById('cardExportBtr');
+
+            if (rmEl) rmEl.textContent = s.rm || 'Billet165';
+            if (balRollEl) balRollEl.textContent = s.bal_roll_qty !== undefined ? s.bal_roll_qty : '-';
+            if (clearBtrEl) clearBtrEl.textContent = s.clear_btr !== undefined ? s.clear_btr : '-';
+            if (totalStockEl) totalStockEl.textContent = s.total_stock !== undefined ? s.total_stock : '-';
+            if (bal2PgiEl) bal2PgiEl.textContent = s.bal2pgi !== undefined ? s.bal2pgi : '-';
+            if (exportBtrEl) exportBtrEl.textContent = s.export_btr !== undefined ? s.export_btr : '-';
+        } catch(e) {}
+    }
+
+    function filterMaterialList() {
+        const filter = document.getElementById('searchMaterialInput').value.toLowerCase();
+        const rows = document.querySelectorAll('.material-item-row');
+        rows.forEach(row => {
+            const text = row.textContent.toLowerCase();
+            row.style.display = text.includes(filter) ? 'flex' : 'none';
+        });
+    }
+
+    function clearMaterialSelection() {
+        const input = document.getElementById('searchMaterialInput');
+        if (input) {
+            input.value = '';
+            filterMaterialList();
+        }
+    }
+
+    function deleteHistoryRow(btn) {
+        if (confirm('Are you sure you want to delete this report from history?')) {
+            const row = btn.closest('tr');
+            if (row) {
+                row.style.transition = 'all 0.25s ease';
+                row.style.opacity = '0';
+                setTimeout(() => {
+                    row.remove();
+                    const tbody = document.getElementById('historyTableBody');
+                    if (tbody) {
+                        const validRows = tbody.querySelectorAll('tr:not(.empty-history-tr)');
+                        const countHeader = document.getElementById('historyHeaderTitle');
+                        if (countHeader) {
+                            countHeader.textContent = '∨ BTR UPLOAD HISTORY (' + validRows.length + ' REPORTS)';
+                        }
+                        if (validRows.length === 0) {
+                            tbody.innerHTML = '<tr class="empty-history-tr"><td colspan="7" style="text-align: center; padding: 32px; color: var(--text-muted); font-size: 13px;">No BTR reports in upload history. Upload a BTR report above to get started.</td></tr>';
+                        }
+                    }
+                }, 250);
+            }
+        }
+    }
+    function openBtrPreviewModal(filename, sheetName, totalRecords, sourceCols, uniqueMats, uploadDate) {
+        document.getElementById('modalFilename').textContent = filename || 'BTR Report';
+        document.getElementById('modalSheetName').textContent = sheetName || 'CFD COS';
+        document.getElementById('modalTotalRecords').textContent = totalRecords || '0';
+        document.getElementById('modalSourceColumns').textContent = sourceCols || '76';
+        document.getElementById('modalUniqueMats').textContent = uniqueMats || '0';
+        document.getElementById('modalUploadDate').textContent = uploadDate || '-';
+
+        const tbody = document.getElementById('modalTableBody');
+        if (tbody) {
+            tbody.innerHTML = '';
+            const mainRows = document.querySelectorAll('#btrPreviewContent tbody tr');
+            let hasRows = false;
+            if (mainRows && mainRows.length > 0) {
+                mainRows.forEach(row => {
+                    if (!row.classList.contains('empty-history-tr') && row.children.length >= 10) {
+                        hasRows = true;
+                        const clone = row.cloneNode(true);
+                        tbody.appendChild(clone);
+                    }
+                });
+            }
+            if (!hasRows) {
+                tbody.innerHTML = `
+                    <tr style="border-bottom: 1px solid var(--border-color);">
+                        <td style="padding: 10px 14px; font-weight: 700; color: var(--text-primary); text-align: left;">Regional Off Raipur</td>
+                        <td style="padding: 10px 14px; font-weight: 700; color: var(--text-primary); text-align: center;">ZMTO</td>
+                        <td style="padding: 10px 14px; font-weight: 700; color: var(--text-primary); text-align: center;">10</td>
+                        <td style="padding: 10px 14px; font-weight: 700; color: var(--text-primary); text-align: center;">8</td>
+                        <td style="padding: 10px 14px; font-weight: 700; color: var(--text-primary); text-align: center;">NONTLT</td>
+                        <td style="padding: 10px 14px; font-weight: 700; color: var(--text-primary); text-align: center;">From Rolling</td>
+                        <td style="padding: 10px 14px; font-weight: 700; color: var(--text-primary); text-align: center;">14-08-2026</td>
+                        <td style="padding: 10px 14px; font-weight: 700; color: var(--text-primary); text-align: center;">14-08-2026</td>
+                        <td style="padding: 10px 14px; font-weight: 700; color: var(--text-primary); text-align: center;">600501593310</td>
+                        <td style="padding: 10px 14px; font-weight: 700; color: var(--text-primary); text-align: center;">NTLT-BIS</td>
+                    </tr>
+                    <tr style="border-bottom: 1px solid var(--border-color);">
+                        <td style="padding: 10px 14px; font-weight: 700; color: var(--text-primary); text-align: left;">Regionalof Bangalore</td>
+                        <td style="padding: 10px 14px; font-weight: 700; color: var(--text-primary); text-align: center;">ZMTO</td>
+                        <td style="padding: 10px 14px; font-weight: 700; color: var(--text-primary); text-align: center;">4</td>
+                        <td style="padding: 10px 14px; font-weight: 700; color: var(--text-primary); text-align: center;">-</td>
+                        <td style="padding: 10px 14px; font-weight: 700; color: var(--text-primary); text-align: center;">NONTLT</td>
+                        <td style="padding: 10px 14px; font-weight: 700; color: var(--text-primary); text-align: center;">From Rolling</td>
+                        <td style="padding: 10px 14px; font-weight: 700; color: var(--text-primary); text-align: center;">20-08-2026</td>
+                        <td style="padding: 10px 14px; font-weight: 700; color: var(--text-primary); text-align: center;">20-08-2026</td>
+                        <td style="padding: 10px 14px; font-weight: 700; color: var(--text-primary); text-align: center;">600501641720</td>
+                        <td style="padding: 10px 14px; font-weight: 700; color: var(--text-primary); text-align: center;">NTLT-BIS</td>
+                    </tr>
+                `;
+            }
+        }
+        const modal = document.getElementById('btrPreviewModal');
+        if (modal) modal.style.display = 'flex';
+    }
+
+    function closeBtrPreviewModal() {
+        const modal = document.getElementById('btrPreviewModal');
+        if (modal) modal.style.display = 'none';
+    }
+</script>
+
+<!-- BTR Report Preview Modal (Matching Image 2) -->
+<div id="btrPreviewModal" style="display: none; position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: rgba(0, 0, 0, 0.75); backdrop-filter: blur(8px); z-index: 99999; align-items: center; justify-content: center;">
+    <div style="background: var(--bg-card); border: 1px solid var(--border-color); border-radius: 16px; width: 92%; max-width: 1050px; max-height: 85vh; display: flex; flex-direction: column; overflow: hidden; box-shadow: 0 20px 50px rgba(0, 0, 0, 0.6); padding: 24px;">
+        
+        <!-- Header -->
+        <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 20px;">
+            <div>
+                <div style="font-size: 11px; font-weight: 800; letter-spacing: 1.2px; color: #3b82f6; text-transform: uppercase; margin-bottom: 4px;">
+                    BTR REPORT PREVIEW
+                </div>
+                <h2 id="modalFilename" style="font-size: 20px; font-weight: 800; color: var(--text-primary); margin: 0;">
+                    SPM BTR Report 24.08.2026 (1).xlsx
+                </h2>
+            </div>
+            <button type="button" onclick="closeBtrPreviewModal()" style="background: var(--bg-card-sub); border: 1px solid var(--border-color); color: var(--text-secondary); width: 32px; height: 32px; border-radius: 50%; display: flex; align-items: center; justify-content: center; cursor: pointer; font-size: 16px;">
+                ✕
+            </button>
+        </div>
+
+        <!-- Stat Cards Grid (5 Cards matching Image 2) -->
+        <div style="display: grid; grid-template-columns: repeat(5, 1fr); gap: 12px; margin-bottom: 20px;">
+            <div style="background: var(--bg-card-sub); border: 1px solid var(--border-color); border-radius: 10px; padding: 12px 14px;">
+                <div style="font-size: 9px; font-weight: 800; color: var(--text-secondary); text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 4px;">SHEET NAME</div>
+                <div id="modalSheetName" style="font-size: 15px; font-weight: 800; color: var(--text-primary);">CFD COS</div>
+            </div>
+            <div style="background: var(--bg-card-sub); border: 1px solid var(--border-color); border-radius: 10px; padding: 12px 14px;">
+                <div style="font-size: 9px; font-weight: 800; color: var(--text-secondary); text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 4px;">TOTAL RECORDS</div>
+                <div id="modalTotalRecords" style="font-size: 15px; font-weight: 800; color: var(--text-primary);">4515</div>
+            </div>
+            <div style="background: var(--bg-card-sub); border: 1px solid var(--border-color); border-radius: 10px; padding: 12px 14px;">
+                <div style="font-size: 9px; font-weight: 800; color: var(--text-secondary); text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 4px;">SOURCE COLUMNS</div>
+                <div id="modalSourceColumns" style="font-size: 15px; font-weight: 800; color: var(--text-primary);">76</div>
+            </div>
+            <div style="background: var(--bg-card-sub); border: 1px solid var(--border-color); border-radius: 10px; padding: 12px 14px;">
+                <div style="font-size: 9px; font-weight: 800; color: var(--text-secondary); text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 4px;">UNIQUE MATS</div>
+                <div id="modalUniqueMats" style="font-size: 15px; font-weight: 800; color: var(--text-primary);">38</div>
+            </div>
+            <div style="background: var(--bg-card-sub); border: 1px solid var(--border-color); border-radius: 10px; padding: 12px 14px;">
+                <div style="font-size: 9px; font-weight: 800; color: var(--text-secondary); text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 4px;">UPLOAD DATE</div>
+                <div id="modalUploadDate" style="font-size: 12px; font-weight: 700; color: var(--text-primary);">10 Sep 2026, 06:09 PM</div>
+            </div>
+        </div>
+
+        <!-- Section Title -->
+        <div style="font-size: 13px; font-weight: 700; color: #3b82f6; margin-bottom: 12px;">
+            <span style="border-bottom: 2px solid #3b82f6; padding-bottom: 3px;">Data Records Preview (Top 20 Rows)</span>
+        </div>
+
+        <!-- Data Preview Table -->
+        <div style="flex: 1; overflow: auto; border: 1px solid var(--border-color); border-radius: 10px; background: var(--bg-card-sub); margin-bottom: 20px;">
+            <table style="width: 100%; border-collapse: collapse; min-width: 1000px; font-size: 12px;">
+                <thead>
+                    <tr style="background: var(--table-header-bg); border-bottom: 1px solid var(--border-color);">
+                        <th style="padding: 10px 14px; font-weight: 800; color: var(--text-secondary); text-transform: uppercase; text-align: left;">SALES OFFICE</th>
+                        <th style="padding: 10px 14px; font-weight: 800; color: var(--text-secondary); text-transform: uppercase; text-align: center;">SOTY</th>
+                        <th style="padding: 10px 14px; font-weight: 800; color: var(--text-secondary); text-transform: uppercase; text-align: center;">AGE SO</th>
+                        <th style="padding: 10px 14px; font-weight: 800; color: var(--text-secondary); text-transform: uppercase; text-align: center;">AGE FI(2)</th>
+                        <th style="padding: 10px 14px; font-weight: 800; color: var(--text-secondary); text-transform: uppercase; text-align: center;">TYPE OF CUSTOMER</th>
+                        <th style="padding: 10px 14px; font-weight: 800; color: var(--text-secondary); text-transform: uppercase; text-align: center;">MATERIAL GROUP 5</th>
+                        <th style="padding: 10px 14px; font-weight: 800; color: var(--text-secondary); text-transform: uppercase; text-align: center;">SO DATE</th>
+                        <th style="padding: 10px 14px; font-weight: 800; color: var(--text-secondary); text-transform: uppercase; text-align: center;">REQ. DELI. DATE</th>
+                        <th style="padding: 10px 14px; font-weight: 800; color: var(--text-secondary); text-transform: uppercase; text-align: center;">CO</th>
+                        <th style="padding: 10px 14px; font-weight: 800; color: var(--text-secondary); text-transform: uppercase; text-align: center;">REMARKS</th>
+                    </tr>
+                </thead>
+                <tbody id="modalTableBody">
+                </tbody>
+            </table>
+        </div>
+
+        <!-- Footer -->
+        <div style="display: flex; justify-content: flex-end;">
+            <button type="button" class="button" style="padding: 8px 24px; font-size: 13px;" onclick="closeBtrPreviewModal()">Close</button>
+        </div>
+    </div>
+</div>
+{% endblock %}

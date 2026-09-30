@@ -1,0 +1,145 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Rail Mill Optimizer - Login</title>
+    <!-- Google Fonts: Inter -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="{% static 'casting_plan/css/app.css' %}?v=4.0">
+</head>
+<body class="login-body">
+    <div class="video-background">
+        <video autoplay loop muted playsinline>
+            <source src="{% static 'casting_plan/1758049301_1710498881ForWebSite1.mp4' %}" type="video/mp4">
+        </video>
+    </div>
+    <div class="video-overlay"></div>
+
+    <div class="login-container">
+        <!-- Left Pane: Logo, Branding & Connected Modules -->
+        <div class="login-info-pane">
+            <div class="login-info-header">
+                <img src="{% static 'casting_plan/jindal-Logo.png' %}" alt="Jindal Logo" class="login-info-logo">
+            </div>
+            <div class="login-info-body">
+                <h2 class="login-info-title">Rail Mill Optimizer</h2>
+                <p class="login-info-subtitle">Jindal Steel & Power — Raigarh</p>
+                
+                <div class="connected-modules-section">
+                    <span class="modules-section-title">CONNECTED MODULES</span>
+                    <div class="modules-grid">
+                        <div class="module-item">
+                            <span class="module-badge badge-c">C</span>
+                            <div class="module-details">
+                                <strong>Casting Optimizer</strong>
+                                <span>Yield & cast optimization</span>
+                            </div>
+                        </div>
+                        <div class="module-item">
+                            <span class="module-badge badge-d">D</span>
+                            <div class="module-details">
+                                <strong>Demand & Orders</strong>
+                                <span>Process heat schedule & orders</span>
+                            </div>
+                        </div>
+                        <div class="module-item">
+                            <span class="module-badge badge-m">M</span>
+                            <div class="module-details">
+                                <strong>Master Database</strong>
+                                <span>Section & LFA batch rules</span>
+                            </div>
+                        </div>
+                        <div class="module-item">
+                            <span class="module-badge badge-r">R</span>
+                            <div class="module-details">
+                                <strong>Validation Reports</strong>
+                                <span>Report generation & checks</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="login-info-footer">
+                <p>© 2026 Jindal Steel & Power. All Rights Reserved.</p>
+            </div>
+        </div>
+        
+        <!-- Right Pane: Login Form -->
+        <div class="login-form-pane">
+            <div class="login-form-wrapper">
+                <h1 class="login-form-title">Sign In</h1>
+                <p class="login-form-subtitle">Access unified operations dashboard</p>
+                
+                {% if error %}
+                <div class="login-error">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <circle cx="12" cy="12" r="10"></circle>
+                        <line x1="12" y1="8" x2="12" y2="12"></line>
+                        <line x1="12" y1="16" x2="12.01" y2="16"></line>
+                    </svg>
+                    <span>{{ error }}</span>
+                </div>
+                {% endif %}
+                
+                <form class="login-form" method="POST">
+                    {% csrf_token %}
+                    <div class="login-field">
+                        <label for="username">Username</label>
+                        <input type="text" id="username" name="username" class="login-input" placeholder="e.g. admin" required autocomplete="username">
+                    </div>
+                    
+                    <div class="login-field">
+                        <label for="password">Password</label>
+                        <div class="password-input-wrapper">
+                            <input type="password" id="password" name="password" class="login-input" placeholder="••••••••" required autocomplete="current-password">
+                            <button type="button" class="password-toggle-btn" id="passwordToggle" title="Toggle password visibility">
+                                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <button class="button sign-in-btn" type="submit">
+                        <span>Sign In to Portal</span>
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4"></path><polyline points="10 17 15 12 10 7"></polyline><line x1="15" y1="12" x2="3" y2="12"></line></svg>
+                    </button>
+                </form>
+                
+                <div class="login-credentials-box" style="margin-top: 20px; padding: 12px 14px; background: rgba(15, 23, 42, 0.6); border: 1px solid rgba(255,255,255,0.08); border-radius: 8px;">
+                    <div style="display: flex; justify-content: space-between; font-size: 11.5px; gap: 12px;">
+                        <div>
+                            <span style="color: #94a3b8; display: block; margin-bottom: 2px;">Rail Mill Credentials:</span>
+                            <strong style="color: #e2e8f0;">admin</strong> <span style="color: #64748b;">/</span> <strong style="color: #e2e8f0;">admin123</strong>
+                        </div>
+                        <div style="text-align: right; border-left: 1px solid rgba(255,255,255,0.1); padding-left: 12px;">
+                            <span style="color: #38bdf8; display: block; margin-bottom: 2px;">SAP ERP Credentials:</span>
+                            <strong style="color: #38bdf8;">sap</strong> <span style="color: #64748b;">/</span> <strong style="color: #38bdf8;">sap123</strong>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const toggleBtn = document.getElementById('passwordToggle');
+            const passwordInput = document.getElementById('password');
+            if (toggleBtn && passwordInput) {
+                toggleBtn.addEventListener('click', function() {
+                    if (passwordInput.type === 'password') {
+                        passwordInput.type = 'text';
+                        toggleBtn.innerHTML = `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"></path><line x1="1" y1="1" x2="23" y2="23"></line></svg>`;
+                    } else {
+                        passwordInput.type = 'password';
+                        toggleBtn.innerHTML = `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>`;
+                    }
+                });
+            }
+        });
+    </script>
+</body>
+</html>

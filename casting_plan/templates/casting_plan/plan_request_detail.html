@@ -1,0 +1,233 @@
+{% extends 'casting_plan/base.html' %}
+{% load static %}
+
+{% block page_title %}{{ plan_req.name }}{% endblock %}
+{% block page_subtitle %} — Plan Optimization Results{% endblock %}
+
+{% block content %}
+<style>
+    .results-header-card {
+        background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%);
+        color: #ffffff;
+        border-radius: 12px;
+        padding: 24px;
+        margin-bottom: 24px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        box-shadow: 0 10px 25px -5px rgba(15, 23, 42, 0.3);
+    }
+    .metrics-summary-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        gap: 16px;
+        margin-bottom: 24px;
+    }
+    .metric-card {
+        background: var(--bg-card, #ffffff);
+        border: 1px solid var(--border-color, #e2e8f0);
+        border-radius: 10px;
+        padding: 20px;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+    }
+    .metric-title {
+        font-size: 12px;
+        font-weight: 700;
+        color: var(--text-muted, #64748b);
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        margin-bottom: 8px;
+    }
+    .metric-value {
+        font-size: 26px;
+        font-weight: 800;
+        color: var(--text-primary, #0f172a);
+    }
+    .badge-status {
+        padding: 6px 12px;
+        border-radius: 20px;
+        font-size: 12px;
+        font-weight: 700;
+        text-transform: uppercase;
+    }
+    .badge-success {
+        background: #dcfce7;
+        color: #166534;
+    }
+    .requirement-result-card {
+        background: var(--bg-card, #ffffff);
+        border: 1px solid var(--border-color, #cbd5e1);
+        border-radius: 12px;
+        padding: 24px;
+        margin-bottom: 20px;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.03);
+    }
+    .result-card-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 16px;
+        padding-bottom: 12px;
+        border-bottom: 1px solid var(--border-color, #e2e8f0);
+    }
+    .highlight-pill {
+        display: inline-flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        background: #eff6ff;
+        border: 1px solid #93c5fd;
+        padding: 10px 18px;
+        border-radius: 10px;
+    }
+    .highlight-label {
+        font-size: 11px;
+        font-weight: 700;
+        color: #1d4ed8;
+        text-transform: uppercase;
+    }
+    .highlight-val {
+        font-size: 22px;
+        font-weight: 800;
+        color: #1e40af;
+        margin-top: 2px;
+    }
+    .btn-download {
+        background: #16a34a;
+        color: #ffffff;
+        border: none;
+        padding: 12px 24px;
+        border-radius: 8px;
+        font-size: 14px;
+        font-weight: 700;
+        text-decoration: none;
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        transition: background 0.2s ease;
+        box-shadow: 0 4px 12px rgba(22, 163, 74, 0.3);
+    }
+    .btn-download:hover {
+        background: #15803d;
+    }
+    .details-table {
+        width: 100%;
+        border-collapse: collapse;
+        margin-top: 16px;
+        font-size: 13px;
+    }
+    .details-table th {
+        background: #f8fafc;
+        color: #475569;
+        font-weight: 700;
+        text-align: left;
+        padding: 10px;
+        border-bottom: 2px solid #e2e8f0;
+    }
+    .details-table td {
+        padding: 10px;
+        border-bottom: 1px solid #f1f5f9;
+        color: #1e293b;
+    }
+    .reason-box {
+        background: #f8fafc;
+        border-left: 4px solid #2563eb;
+        padding: 12px 16px;
+        border-radius: 0 8px 8px 0;
+        font-size: 13px;
+        color: #334155;
+        margin-top: 16px;
+    }
+</style>
+
+<div class="results-header-card">
+    <div>
+        <h2 style="margin: 0 0 6px 0; font-size: 22px;">{{ plan_req.name }}</h2>
+        <span style="color: #94a3b8; font-size: 13px;">Created on {{ plan_req.created_at|date:"M d, Y H:i" }} | {{ requirements|length }} Requirement(s)</span>
+    </div>
+    <div>
+        {% if plan_req.output_file %}
+        <a href="{% url 'download_plan' plan_req.id %}" class="btn-download">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>
+            DOWNLOAD CASTING PLAN EXCEL
+        </a>
+        {% endif %}
+    </div>
+</div>
+
+<div class="metrics-summary-grid">
+    <div class="metric-card">
+        <div class="metric-title">Requirements</div>
+        <div class="metric-value">{{ requirements|length }}</div>
+    </div>
+    <div class="metric-card">
+        <div class="metric-title">Total Demand</div>
+        <div class="metric-value">{{ plan_req.total_demand|floatformat:3 }} MT</div>
+    </div>
+    <div class="metric-card">
+        <div class="metric-title">Planned Production</div>
+        <div class="metric-value">{{ plan_req.total_planned_qty|floatformat:3 }} MT</div>
+    </div>
+    <div class="metric-card">
+        <div class="metric-title">Average Yield</div>
+        <div class="metric-value" style="color: #16a34a;">{{ plan_req.avg_estimated_yield|floatformat:2 }}%</div>
+    </div>
+</div>
+
+<h3 style="margin-bottom: 16px; font-size: 18px; color: var(--text-primary);">Optimized Requirement Details</h3>
+
+{% for r in requirements %}
+<div class="requirement-result-card">
+    <div class="result-card-header">
+        <div>
+            <h4 style="margin: 0 0 4px 0; font-size: 16px; color: #0f172a;">{{ r.planning_section }} — {{ r.section_weight }} kg/m</h4>
+            <span style="font-size: 13px; color: #64748b;">Grade: <strong>{{ r.finished_grade }}</strong> | Type: <strong>{{ r.requirement_type }}</strong> | Priority: <strong>{{ r.priority }}</strong></span>
+        </div>
+        <div style="display: flex; gap: 12px;">
+            <div class="highlight-pill">
+                <span class="highlight-label">Optimized Casting Length</span>
+                <span class="highlight-val">{{ r.selected_casting_length|floatformat:2 }} Mtr</span>
+            </div>
+            <div class="highlight-pill" style="background: #f0fdf4; border-color: #86efac;">
+                <span class="highlight-label" style="color: #15803d;">Estimated Yield</span>
+                <span class="highlight-val" style="color: #166534;">{{ r.estimated_yield_pct|floatformat:2 }}%</span>
+            </div>
+        </div>
+    </div>
+
+    <table class="details-table">
+        <thead>
+            <tr>
+                <th>Demand Qty</th>
+                <th>Planned Qty</th>
+                <th>Required RM Qty</th>
+                <th>Crop Loss</th>
+                <th>Offcut Loss</th>
+                <th>Process Loss</th>
+                <th>Excess Production</th>
+                <th>RM Family / Section</th>
+                <th>RM Grade</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td><strong>{{ r.demand_quantity|floatformat:3 }} MT</strong></td>
+                <td>{{ r.planned_quantity|floatformat:3 }} MT</td>
+                <td>{{ r.required_rm_quantity|floatformat:3 }} MT</td>
+                <td>{{ r.crop_loss_mt|floatformat:3 }} MT</td>
+                <td>{{ r.offcut_loss_mt|floatformat:3 }} MT</td>
+                <td>{{ r.process_loss_mt|floatformat:3 }} MT</td>
+                <td style="color: #ea580c;">+{{ r.excess_quantity|floatformat:3 }} MT</td>
+                <td><span class="badge-family">{{ r.resolved_rm_family }}</span> {{ r.resolved_rm_section }}</td>
+                <td>{{ r.resolved_rm_grade }}</td>
+            </tr>
+        </tbody>
+    </table>
+
+    <div class="reason-box">
+        <strong>Optimization Explanation:</strong> {{ r.optimization_reason }}
+    </div>
+</div>
+{% endfor %}
+
+{% endblock %}

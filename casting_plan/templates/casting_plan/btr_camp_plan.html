@@ -1,0 +1,332 @@
+{% extends 'casting_plan/base.html' %}
+{% load static %}
+
+{% block page_title %}Camp Plan Ready — Authoritative CAMP PLAN FORMAT structure generated{% endblock %}
+{% block page_subtitle %}{% endblock %}
+
+{% block content %}
+<!-- Workflow Stepper Header (8 Steps) -->
+<div class="step-tracker-bar">
+    <a href="{% url 'btr_input' %}" class="step-item completed">
+        <span class="step-num">✓</span>
+        <span>BTR Input</span>
+    </a>
+    <span class="step-divider">—</span>
+    <a href="{% url 'btr_rolling_calendar' %}" class="step-item completed">
+        <span class="step-num">✓</span>
+        <span>Upload Rolling Calendar</span>
+    </a>
+    <span class="step-divider">—</span>
+    <a href="{% url 'btr_planning_material' %}" class="step-item completed">
+        <span class="step-num">✓</span>
+        <span>Planning Material</span>
+    </a>
+    <span class="step-divider">—</span>
+    <a href="{% url 'btr_camp_plan' %}" class="step-item active">
+        <span class="step-num">4</span>
+        <span>Camp Plan</span>
+    </a>
+    <span class="step-divider">—</span>
+    <a href="{% url 'create_casting_plan' %}" class="step-item">
+        <span class="step-num">5</span>
+        <span>Casting Plan</span>
+    </a>
+    <span class="step-divider">—</span>
+    <a href="{% url 'btr_embossing_plan' %}" class="step-item">
+        <span class="step-num">6</span>
+        <span>Campaign Summary</span>
+    </a>
+    <span class="step-divider">—</span>
+    <a href="{% url 'btr_roll_shop_sequence' %}" class="step-item">
+        <span class="step-num">7</span>
+        <span>Roll Shop Sequence</span>
+    </a>
+    <span class="step-divider">—</span>
+    <a href="{% url 'btr_rolling_plan' %}" class="step-item">
+        <span class="step-num">8</span>
+        <span>Rolling Plan</span>
+    </a>
+</div>
+
+{% if is_custom_upload %}
+<!-- Custom Campaign Active Notification Banner -->
+<div class="alert-custom-banner" style="background: rgba(34, 197, 94, 0.12); border: 1px solid rgba(34, 197, 94, 0.35); border-radius: var(--radius-md); padding: 12px 16px; margin-bottom: 20px; display: flex; justify-content: space-between; align-items: center; color: #16a34a; font-size: 13px;">
+    <div>
+        <strong>✓ Campaign generated for {{ planning_material }}:</strong> {{ summary.valid_count }} rows, {{ summary.total_btr_qty }} MT. (Using custom uploaded file <strong>{{ custom_filename }}</strong>).
+    </div>
+    <a href="{% url 'btr_camp_plan' %}?clear_custom=1" style="color: #dc2626; text-decoration: none; font-weight: 600; font-size: 12px; background: rgba(220, 38, 38, 0.1); padding: 4px 10px; border-radius: 4px; border: 1px solid rgba(220, 38, 38, 0.2);">✕ Reset to Default Plan</a>
+</div>
+{% endif %}
+
+{% if is_assigned_by_sap %}
+<!-- SAP Received Status Notification Banner -->
+<div class="alert-custom-banner" style="background: rgba(34, 197, 94, 0.12); border: 1px solid rgba(34, 197, 94, 0.35); border-radius: var(--radius-md); padding: 12px 16px; margin-bottom: 20px; display: flex; justify-content: space-between; align-items: center; color: #22c55e; font-size: 13px;">
+    <div>
+        <strong>✓ Received from SAP:</strong> Campaign Plan for <strong>{{ planning_material }}</strong> assigned <strong>CAMP PLAN NO. {{ sap_camp_no }}</strong> by SAP ERP. (Column W included in export).
+    </div>
+    <span style="color: #ffffff; background: #22c55e; padding: 3px 10px; border-radius: 12px; font-weight: 700; font-size: 11px; text-transform: uppercase; letter-spacing: 0.5px;">Received from SAP</span>
+</div>
+{% elif is_sent_to_sap %}
+<!-- SAP Sent Notification Banner -->
+<div class="alert-custom-banner" style="background: rgba(245, 158, 11, 0.12); border: 1px solid rgba(245, 158, 11, 0.35); border-radius: var(--radius-md); padding: 12px 16px; margin-bottom: 20px; display: flex; justify-content: space-between; align-items: center; color: #f59e0b; font-size: 13px;">
+    <div>
+        <strong>⏳ Sent to SAP:</strong> Campaign Plan for <strong>{{ planning_material }}</strong> transmitted to SAP ERP Portal. Awaiting SAP Camp Plan No. entry.
+    </div>
+    <span style="color: #ffffff; background: #f59e0b; padding: 3px 10px; border-radius: 12px; font-weight: 700; font-size: 11px; text-transform: uppercase; letter-spacing: 0.5px;">Pending SAP Entry</span>
+</div>
+{% endif %}
+
+<div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 20px; flex-wrap: wrap; gap: 14px;">
+    <div>
+        <div style="font-size: 11px; letter-spacing: 1.5px; font-weight: 800; color: #3b82f6; text-transform: uppercase; margin-bottom: 4px;">
+            STEP 4 OF 8 — CAMPAIGN PLAN
+        </div>
+        <h1 style="font-size: 24px; font-weight: 800; color: var(--text-primary); margin-bottom: 4px;">Camp Plan Ready</h1>
+        <p style="font-size: 13px; color: var(--text-secondary);">Mapped BTR dataset to exact CAMP PLAN FORMAT (Column A - BX) with calculated Wt, Pc &amp; No. of Pcs.</p>
+    </div>
+
+    <div style="display: flex; gap: 10px; align-items: center; flex-wrap: wrap;">
+        <a href="{% url 'btr_camp_plan_export' %}?mat={{ planning_material|urlencode }}" class="button">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>
+            Export Camp Plan Excel
+        </a>
+
+        <form id="uploadCampPlanForm" action="{% url 'btr_camp_plan_upload' %}" method="post" enctype="multipart/form-data" style="margin: 0;">
+            {% csrf_token %}
+            <input type="file" name="camp_plan_file" id="campPlanFileInput" accept=".xlsx,.xlsm" style="display:none;" onchange="this.form.submit()">
+            <button type="button" class="button-secondary" onclick="document.getElementById('campPlanFileInput').click()" style="background: rgba(59, 130, 246, 0.12); color: #3b82f6; border: 1px solid rgba(59, 130, 246, 0.3); display: inline-flex; align-items: center; gap: 6px;">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="17 8 12 3 7 8"></polyline><line x1="12" y1="3" x2="12" y2="15"></line></svg>
+                Upload Campaign Plan
+            </button>
+        </form>
+
+        {% if is_assigned_by_sap %}
+            <div style="background: rgba(34, 197, 94, 0.15); border: 1px solid rgba(34, 197, 94, 0.4); color: #22c55e; padding: 8px 14px; border-radius: 8px; font-size: 12.5px; font-weight: 700; display: inline-flex; align-items: center; gap: 6px;">
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"></polyline></svg>
+                Received from SAP (Camp Plan No. {{ sap_camp_no }})
+            </div>
+        {% elif is_sent_to_sap %}
+            <div style="background: rgba(245, 158, 11, 0.15); border: 1px solid rgba(245, 158, 11, 0.4); color: #f59e0b; padding: 8px 14px; border-radius: 8px; font-size: 12.5px; font-weight: 700; display: inline-flex; align-items: center; gap: 6px;">
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>
+                Pending SAP Entry...
+            </div>
+        {% else %}
+            <form id="sendToSapForm" action="{% url 'btr_send_to_sap' %}" method="post" style="margin: 0;">
+                {% csrf_token %}
+                <input type="hidden" name="planning_material" value="{{ planning_material }}">
+                <input type="hidden" name="camp_plan_no" value="6427">
+                <button type="submit" class="button" style="background: linear-gradient(135deg, #059669 0%, #10b981 100%); color: #ffffff; border: none; font-weight: 700; display: inline-flex; align-items: center; gap: 6px; box-shadow: 0 4px 12px rgba(16, 185, 129, 0.25);">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path><polyline points="22 4 12 14.01 9 11.01"></polyline></svg>
+                    Send to SAP
+                </button>
+            </form>
+        {% endif %}
+
+        <a href="{% url 'create_casting_plan' %}" class="button" style="background: linear-gradient(135deg, #ff6b00 0%, #ff5500 100%); color: #ffffff; padding: 9px 20px; font-size: 13px; font-weight: 700; border-radius: 8px; box-shadow: 0 4px 15px rgba(255, 107, 0, 0.35); text-decoration: none; display: inline-flex; align-items: center; gap: 8px;">
+            <span>Proceed to Step 5: Casting Plan</span>
+            <span>→</span>
+        </a>
+    </div>
+</div>
+
+<!-- Summary Badges Bar (6 Horizontal Badges) -->
+<div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(170px, 1fr)); gap: 12px; margin-bottom: 20px;">
+    <!-- Badge 1 -->
+    <div style="background: var(--bg-card-sub); border: 1px solid var(--border-color); border-radius: var(--radius-md); padding: 12px 14px; display: flex; align-items: center; gap: 10px;">
+        <div style="width: 24px; height: 24px; border-radius: 50%; background: var(--success-light); color: var(--success); display: flex; align-items: center; justify-content: center; flex-shrink: 0; font-size: 12px; font-weight: 700;">✓</div>
+        <div>
+            <div style="font-size: 14px; font-weight: 800; color: var(--text-primary);">{{ planning_material|default:"AL_110X110" }}</div>
+            <div style="font-size: 9px; font-weight: 700; color: var(--text-secondary); text-transform: uppercase;">PLANNING MATERIAL</div>
+        </div>
+    </div>
+
+    <!-- Badge 2 -->
+    <div style="background: var(--bg-card-sub); border: 1px solid var(--border-color); border-radius: var(--radius-md); padding: 12px 14px; display: flex; align-items: center; gap: 10px;">
+        <div style="width: 24px; height: 24px; border-radius: 50%; background: var(--success-light); color: var(--success); display: flex; align-items: center; justify-content: center; flex-shrink: 0; font-size: 12px; font-weight: 700;">✓</div>
+        <div>
+            <div style="font-size: 14px; font-weight: 800; color: var(--text-primary);">{% if summary.total_input is not None %}{{ summary.total_input }}{% elif summary.input_count is not None %}{{ summary.input_count }}{% else %}0{% endif %}</div>
+            <div style="font-size: 9px; font-weight: 700; color: var(--text-secondary); text-transform: uppercase;">TOTAL INPUT RECORDS</div>
+        </div>
+    </div>
+
+    <!-- Badge 3 -->
+    <div style="background: var(--bg-card-sub); border: 1px solid var(--border-color); border-radius: var(--radius-md); padding: 12px 14px; display: flex; align-items: center; gap: 10px;">
+        <div style="width: 24px; height: 24px; border-radius: 50%; background: var(--success-light); color: var(--success); display: flex; align-items: center; justify-content: center; flex-shrink: 0; font-size: 12px; font-weight: 700;">✓</div>
+        <div>
+            <div style="font-size: 14px; font-weight: 800; color: var(--text-primary);">{% if summary.valid_count is not None %}{{ summary.valid_count }}{% else %}0{% endif %}</div>
+            <div style="font-size: 9px; font-weight: 700; color: var(--text-secondary); text-transform: uppercase;">VALID CAMP PLAN RECORDS</div>
+        </div>
+    </div>
+
+    <!-- Badge 4 -->
+    <div style="background: var(--bg-card-sub); border: 1px solid var(--border-color); border-radius: var(--radius-md); padding: 12px 14px; display: flex; align-items: center; gap: 10px;">
+        <div style="width: 24px; height: 24px; border-radius: 50%; background: rgba(239,68,68,0.15); color: #ef4444; display: flex; align-items: center; justify-content: center; flex-shrink: 0; font-size: 12px; font-weight: 700;">!</div>
+        <div>
+            <div style="font-size: 14px; font-weight: 800; color: var(--text-primary);">{% if summary.removed_count is not None %}{{ summary.removed_count }}{% else %}0{% endif %}</div>
+            <div style="font-size: 9px; font-weight: 700; color: var(--text-secondary); text-transform: uppercase;">REMOVED RECORDS</div>
+        </div>
+    </div>
+
+    <!-- Badge 5 -->
+    <div style="background: var(--bg-card-sub); border: 1px solid var(--border-color); border-radius: var(--radius-md); padding: 12px 14px; display: flex; align-items: center; gap: 10px;">
+        <div style="width: 24px; height: 24px; border-radius: 50%; background: var(--accent-blue-bg); color: #3b82f6; display: flex; align-items: center; justify-content: center; flex-shrink: 0;">📊</div>
+        <div>
+            <div style="font-size: 14px; font-weight: 800; color: var(--text-primary);">{% if summary.total_btr_qty is not None %}{{ summary.total_btr_qty }}{% else %}0{% endif %} MT</div>
+            <div style="font-size: 9px; font-weight: 700; color: var(--text-secondary); text-transform: uppercase;">TOTAL BTR QUANTITY</div>
+        </div>
+    </div>
+
+    <!-- Badge 6 -->
+    <div style="background: var(--bg-card-sub); border: 1px solid var(--border-color); border-radius: var(--radius-md); padding: 12px 14px; display: flex; align-items: center; gap: 10px;">
+        <div style="width: 24px; height: 24px; border-radius: 50%; background: rgba(255,117,0,0.15); color: #ff7500; display: flex; align-items: center; justify-content: center; flex-shrink: 0;">📦</div>
+        <div>
+            <div style="font-size: 14px; font-weight: 800; color: var(--text-primary);">{% if summary.total_pcs is not None %}{{ summary.total_pcs }}{% else %}0{% endif %}</div>
+            <div style="font-size: 9px; font-weight: 700; color: var(--text-secondary); text-transform: uppercase;">TOTAL NO. OF PCS.</div>
+        </div>
+    </div>
+</div>
+
+{% if summary.removed_count and summary.removed_count > 0 %}
+<!-- Notification Banner (Brownish/Amber Excluded Records Notice) -->
+<div class="alert-excluded-banner" style="background: rgba(255, 117, 0, 0.08); border: 1px solid rgba(255, 117, 0, 0.35); border-radius: var(--radius-md); padding: 12px 16px; margin-bottom: 20px; display: flex; justify-content: space-between; align-items: center; color: #ff9d42; font-size: 13px;">
+    <div>
+        <strong style="color: #ffaa33;">Excluded Records Notice:</strong> {{ summary.removed_count }} record(s) excluded from Camp Plan (due to no valid length or No. of Pcs. &lt; 0.8).
+    </div>
+    <a href="javascript:void(0)" class="alert-excluded-link" style="color: #ffaa33; text-decoration: none; font-weight: 600;" onclick="alert('{{ summary.removed_count }} records were excluded due to invalid length or piece count.');">► View excluded record details</a>
+</div>
+{% endif %}
+
+<!-- Camp Plan Output Table Card -->
+<div class="panel">
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; flex-wrap: wrap; gap: 10px;">
+        <div style="display: flex; align-items: center; gap: 10px;">
+            <h2 style="margin: 0; font-size: 12px; font-weight: 800; color: var(--text-secondary); letter-spacing: 0.8px;">
+                CAMP PLAN OUTPUT TABLE (COLUMNS A — BX)
+            </h2>
+            <span class="record-badge badge-records-green">SHOWING {{ valid_records|length }} OF {{ summary.valid_count|default:total_valid_count|default:85 }} ROWS</span>
+        </div>
+
+        <div style="display: flex; gap: 10px; align-items: center;">
+            <input type="text" id="campSearchInput" placeholder="Search Camp Plan..." class="search-input" style="width: 220px; padding: 6px 12px; font-size: 12px;">
+            <a href="{% url 'btr_camp_plan_export' %}?mat={{ planning_material|urlencode }}" class="button-secondary" style="padding: 6px 12px; font-size: 12px;">Export Excel</a>
+        </div>
+    </div>
+
+    <div style="overflow-x: auto;">
+        <table id="campTable">
+            <thead>
+                <tr>
+                    <th>A — SR NO</th>
+                    <th>B — SO TYPE</th>
+                    <th>C — SALES OFFICE</th>
+                    <th>D — SO NO.</th>
+                    <th>E — SO ITEM</th>
+                    <th>F — SO DATE</th>
+                    <th>G — AGE</th>
+                    <th>H — MATERIAL</th>
+                    <th>I — SOLD TO PARTY NAME</th>
+                    <th>J — SHIP TO CITY</th>
+                    <th>K — SHIP TO PARTY</th>
+                    <th>L — SOLD TO CITY</th>
+                    <th>M — SEC WT</th>
+                    <th>N — THICK MM</th>
+                    <th>O — GRADE</th>
+                    <th>P — CUTTING LENGTH</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% if valid_records %}
+                    {% for r in valid_records|slice:":20" %}
+                    <tr>
+                        <td>{% if r.Sr_no %}{{ r.Sr_no }}{% else %}{{ forloop.counter }}{% endif %}</td>
+                        <td>{% if r.SO_Type %}{{ r.SO_Type }}{% elif r.SOTy %}{{ r.SOTy }}{% else %}-{% endif %}</td>
+                        <td>{% if r.Sales_Office %}{{ r.Sales_Office }}{% else %}-{% endif %}</td>
+                        <td>{% if r.SO_No %}{{ r.SO_No }}{% elif r.CO %}{{ r.CO }}{% else %}-{% endif %}</td>
+                        <td>{% if r.SO_Item %}{{ r.SO_Item }}{% else %}-{% endif %}</td>
+                        <td>{% if r.SO_Date %}{{ r.SO_Date }}{% else %}-{% endif %}</td>
+                        <td>{% if r.Age %}{{ r.Age }}{% elif r.Age_SO %}{{ r.Age_SO }}{% else %}-{% endif %}</td>
+                        <td>{% if r.Material %}{{ r.Material }}{% else %}-{% endif %}</td>
+                        <td>{% if r.Sold_To_Party_Name %}{{ r.Sold_To_Party_Name }}{% else %}-{% endif %}</td>
+                        <td>{% if r.Ship_To_City %}{{ r.Ship_To_City }}{% else %}-{% endif %}</td>
+                        <td>{% if r.Ship_to_Party %}{{ r.Ship_to_Party }}{% else %}-{% endif %}</td>
+                        <td>{% if r.Sold_To_City %}{{ r.Sold_To_City }}{% else %}-{% endif %}</td>
+                        <td>{% if r.Sec_Wt %}{{ r.Sec_Wt }}{% else %}-{% endif %}</td>
+                        <td>{% if r.Thick_ness %}{{ r.Thick_ness }}{% else %}-{% endif %}</td>
+                        <td>{% if r.Grade %}{{ r.Grade }}{% else %}-{% endif %}</td>
+                        <td>{% if r.Cutting_Length %}{{ r.Cutting_Length }}{% else %}-{% endif %}</td>
+                    </tr>
+                    {% endfor %}
+                {% else %}
+                    <tr>
+                        <td colspan="16" style="text-align: center; padding: 24px; color: var(--text-muted);">No valid Camp Plan records available.</td>
+                    </tr>
+                {% endif %}
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<!-- Camp Plan History & Downloads Card -->
+<div class="panel" style="margin-top: 24px;">
+    <h2 style="font-size: 13px; font-weight: 800; color: var(--text-primary); letter-spacing: 0.5px; margin-top: 0; margin-bottom: 16px; text-transform: uppercase;">CAMP PLAN HISTORY &amp; DOWNLOADS</h2>
+    <div style="overflow-x: auto;">
+        <table>
+            <thead>
+                <tr>
+                    <th>PLANNING MATERIAL</th>
+                    <th>CREATED AT</th>
+                    <th>SOURCE FILE</th>
+                    <th>VALID RECORDS</th>
+                    <th>TOTAL BTR QTY (MT)</th>
+                    <th style="text-align: right;">ACTION</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% if camp_history %}
+                    {% for h in camp_history %}
+                    <tr>
+                        <td><strong style="color: #ff7500; font-weight: 700;">{{ h.planning_mat }}</strong></td>
+                        <td>{{ h.created_at_fmt }}</td>
+                        <td>{{ h.source_btr_file }}</td>
+                        <td><span class="record-badge badge-records-green">{{ h.valid_records }}</span></td>
+                        <td>{{ h.total_btr_qty }}</td>
+                        <td style="text-align: right; white-space: nowrap;">
+                            <div style="display: flex; gap: 8px; justify-content: flex-end; align-items: center;">
+                                <a href="{% url 'btr_camp_plan_export' %}?mat={{ h.planning_mat|urlencode }}" class="button-secondary" style="padding: 5px 11px; font-size: 11.5px; border-radius: 6px; font-weight: 600; text-decoration: none;">
+                                    ⬇ Export Excel
+                                </a>
+                            </div>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                {% else %}
+                    <tr>
+                        <td><strong style="color: #ff7500; font-weight: 700;">{{ planning_material|default:"AL_100X100" }}</strong></td>
+                        <td>{% if today %}{{ today }}{% else %}Active Session{% endif %}</td>
+                        <td>Uploaded BTR Report</td>
+                        <td><span class="record-badge badge-records-green">{{ summary.valid_count|default:85 }}</span></td>
+                        <td>{{ summary.total_btr_qty|default:"584.915" }}</td>
+                        <td style="text-align: right; white-space: nowrap;">
+                            <div style="display: flex; gap: 8px; justify-content: flex-end; align-items: center;">
+                                <a href="{% url 'btr_camp_plan_export' %}?mat={{ planning_material|urlencode }}" class="button-secondary" style="padding: 5px 11px; font-size: 11.5px; border-radius: 6px; font-weight: 600; text-decoration: none;">
+                                    ⬇ Export Excel
+                                </a>
+                            </div>
+                        </td>
+                    </tr>
+                {% endif %}
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<script>
+    document.getElementById('campSearchInput')?.addEventListener('input', function(e) {
+        const query = e.target.value.toLowerCase();
+        document.querySelectorAll('#campTable tbody tr').forEach(row => {
+            const text = row.textContent.toLowerCase();
+            row.style.display = text.includes(query) ? 'table-row' : 'none';
+        });
+    });
+</script>
+{% endblock %}

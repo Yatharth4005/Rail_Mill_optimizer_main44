@@ -1,0 +1,251 @@
+{% extends 'casting_plan/base.html' %}
+{% load static %}
+{% block page_title %}Dashboard{% endblock %}
+{% block page_subtitle %} — Rail Mill Optimizer{% endblock %}
+
+{% block content %}
+<!-- Hero Banner Card -->
+<div class="hero-banner" style="position: relative; overflow: hidden; min-height: 220px; display: flex; align-items: center; justify-content: space-between; background: #07132b; border: 1px solid rgba(59, 130, 246, 0.4); border-radius: 16px; margin-bottom: 24px; padding: 0;">
+    
+    <!-- Left Text Portion -->
+    <div class="hero-banner-content" style="padding: 28px 32px; z-index: 2; flex: 1; max-width: 42%;">
+        <div class="hero-banner-eyebrow" style="font-size: 11px; font-weight: 800; color: #3b82f6; letter-spacing: 1.5px; text-transform: uppercase; margin-bottom: 6px;">
+            RAIL MILL • OPTIMIZATION PORTAL
+        </div>
+        <h1 class="hero-banner-title" style="font-size: 28px; font-weight: 800; color: #ffffff; margin: 0 0 8px 0; line-height: 1.2;">
+            Rail Mill <span style="color: #ff7500;">Optimization</span>
+        </h1>
+        <p class="hero-banner-subtitle" style="font-size: 13px; color: var(--text-secondary); margin-bottom: 20px; line-height: 1.5;">
+            Convert BTR demand into an efficient, cost-effective and high-yield rail production plan.
+        </p>
+        <a class="button" href="{% url 'upload_btr' %}" style="display: inline-flex; align-items: center; gap: 8px; padding: 10px 22px; font-size: 13px; font-weight: 700; border-radius: 30px; background: linear-gradient(135deg, #ff7500 0%, #ff5500 100%); color: #ffffff; text-decoration: none; box-shadow: 0 4px 15px rgba(255, 117, 0, 0.35);">
+            <span>Start BTR Input</span>
+            <span style="font-size: 15px;">→</span>
+        </a>
+    </div>
+
+    <!-- Right Image Portion with Slanted Border & Callout Text -->
+    <div style="position: relative; flex: 1.4; height: 220px; overflow: hidden; display: flex; align-items: center; justify-content: flex-end;">
+        
+        <!-- Slanted Diagonal Cut Container -->
+        <div style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; clip-path: polygon(70px 0, 100% 0, 100% 100%, 0% 100%); background: #000; overflow: hidden;">
+            <img src="{% static 'casting_plan/hero-banner-art.png' %}?v=3.0" alt="Rail Mill Rolling Line" style="width: 100%; height: 100%; object-fit: cover; object-position: center;">
+        </div>
+
+        <!-- Diagonal Orange Accent Divider Line -->
+        <div style="position: absolute; top: -10px; left: -10px; width: 85px; height: 250px; background: linear-gradient(180deg, #ff7500 0%, #ff4500 100%); clip-path: polygon(70px 0, 75px 0, 5px 100%, 0% 100%); z-index: 3; pointer-events: none;"></div>
+
+        <!-- Vertical Orange Bar Callout Text on the Right -->
+        <div style="position: absolute; right: 28px; top: 28px; display: flex; align-items: flex-start; gap: 10px; z-index: 5; background: rgba(7, 19, 43, 0.45); backdrop-filter: blur(8px); padding: 10px 14px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.1);">
+            <div style="width: 3px; height: 50px; background: #ff7500; border-radius: 2px;"></div>
+            <div style="font-size: 12px; font-weight: 800; color: #ffffff; line-height: 1.35; text-transform: uppercase; letter-spacing: 0.5px;">
+                Better Planning<br>
+                Higher Yield<br>
+                Lower Cost
+            </div>
+        </div>
+
+    </div>
+</div>
+
+<!-- 4 Metric Cards Grid -->
+<div class="cards">
+    <!-- Demand Records -->
+    <div class="metric-card">
+        <div class="metric-icon-badge badge-blue-light">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line><polyline points="10 9 9 9 8 9"></polyline></svg>
+        </div>
+        <div class="metric-card-details">
+            <div class="metric-card-val">128</div>
+            <div class="metric-card-label">DEMAND RECORDS</div>
+            <div class="metric-card-trend trend-up">
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="18 15 12 9 6 15"></polyline></svg>
+                <span>+8 vs yesterday</span>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Section Rules -->
+    <div class="metric-card">
+        <div class="metric-icon-badge badge-orange-light">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect><line x1="9" y1="3" x2="9" y2="21"></line><line x1="15" y1="3" x2="15" y2="21"></line><line x1="3" y1="9" x2="21" y2="9"></line><line x1="3" y1="15" x2="21" y2="15"></line></svg>
+        </div>
+        <div class="metric-card-details">
+            <div class="metric-card-val">46</div>
+            <div class="metric-card-label">SECTION RULES</div>
+            <div class="metric-card-trend trend-neutral">
+                <span>Updated today</span>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Grade Mappings -->
+    <div class="metric-card">
+        <div class="metric-icon-badge badge-blue-light">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="12 2 2 7 12 12 22 7 12 2"></polygon><polyline points="2 17 12 22 22 17"></polyline><polyline points="2 12 12 17 22 12"></polyline></svg>
+        </div>
+        <div class="metric-card-details">
+            <div class="metric-card-val">38</div>
+            <div class="metric-card-label">GRADE MAPPINGS</div>
+            <div class="metric-card-trend trend-up">
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="18 15 12 9 6 15"></polyline></svg>
+                <span>+2 vs last week</span>
+            </div>
+        </div>
+    </div>
+    
+    <!-- LFA Batch Rules -->
+    <div class="metric-card">
+        <div class="metric-icon-badge badge-orange-light">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"></path></svg>
+        </div>
+        <div class="metric-card-details">
+            <div class="metric-card-val">52</div>
+            <div class="metric-card-label">LFA BATCH RULES</div>
+            <div class="metric-card-trend trend-neutral">
+                <span>Updated today</span>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Optimization Logic Flow Panel -->
+<section class="panel">
+    <h2>OPTIMIZATION LOGIC FLOW</h2>
+    <div class="flow-panel-content" style="display: flex; gap: 24px; align-items: center; justify-content: space-between;">
+        <div class="flow-steps-wrapper" style="flex: 1;">
+            <div class="flow-steps" style="display: flex; align-items: center; gap: 12px; margin-bottom: 20px;">
+                <!-- Step 1 -->
+                <div class="flow-step-item" style="text-align: center;">
+                    <div class="flow-step-circle blue">
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline></svg>
+                    </div>
+                    <span class="flow-step-label" style="font-weight: 700; font-size: 12px; display: block; margin-top: 4px;">Orders</span>
+                    <span style="font-size: 10px; color: var(--text-muted);">(BTR Input)</span>
+                </div>
+                
+                <span class="flow-step-arrow">→</span>
+                
+                <!-- Step 2 -->
+                <div class="flow-step-item" style="text-align: center;">
+                    <div class="flow-step-circle orange">
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"></rect><line x1="9" y1="3" x2="9" y2="21"></line></svg>
+                    </div>
+                    <span class="flow-step-label" style="font-weight: 700; font-size: 12px; display: block; margin-top: 4px;">Grade Mapping</span>
+                    <span style="font-size: 10px; color: var(--text-muted);">(Customer → Raw Grade)</span>
+                </div>
+                
+                <span class="flow-step-arrow">→</span>
+                
+                <!-- Step 3 -->
+                <div class="flow-step-item" style="text-align: center;">
+                    <div class="flow-step-circle blue">
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="7" width="20" height="10" rx="2"></rect></svg>
+                    </div>
+                    <span class="flow-step-label" style="font-weight: 700; font-size: 12px; display: block; margin-top: 4px;">Billet Length</span>
+                    <span style="font-size: 10px; color: var(--text-muted);">(LFA Rules)</span>
+                </div>
+                
+                <span class="flow-step-arrow">→</span>
+                
+                <!-- Step 4 -->
+                <div class="flow-step-item" style="text-align: center;">
+                    <div class="flow-step-circle orange">
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>
+                    </div>
+                    <span class="flow-step-label" style="font-weight: 700; font-size: 12px; display: block; margin-top: 4px;">Yield / Loss</span>
+                    <span style="font-size: 10px; color: var(--text-muted);">(Process + Tolerance)</span>
+                </div>
+                
+                <span class="flow-step-arrow">→</span>
+                
+                <!-- Step 5 (Final Card) -->
+                <div class="flow-step-final-card" style="border: 2px solid #ff7500; background: rgba(255, 117, 0, 0.12); padding: 10px 18px; border-radius: 12px; text-align: center;">
+                    <div class="flow-step-final-check" style="background: #ff7500; color: #ffffff; width: 22px; height: 22px; border-radius: 50%; display: inline-flex; align-items: center; justify-content: center; margin-bottom: 2px;">
+                        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.5"><polyline points="20 6 9 17 4 12"></polyline></svg>
+                    </div>
+                    <strong style="font-size: 13px; color: #ff7500; font-weight: 800; display: block;">Rail Plan</strong>
+                    <span style="font-size: 10px; color: var(--text-muted);">(Optimized Output)</span>
+                </div>
+            </div>
+
+            <ul class="benefit-list" style="list-style: none; padding: 0; margin-top: 14px;">
+                <li style="margin-bottom: 8px; font-size: 12.5px; color: var(--text-secondary); display: flex; align-items: center; gap: 8px;">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--success)" stroke-width="3"><polyline points="20 6 9 17 4 12"></polyline></svg>
+                    <span>Section-wise raw-material length tolerance rules</span>
+                </li>
+                <li style="margin-bottom: 8px; font-size: 12.5px; color: var(--text-secondary); display: flex; align-items: center; gap: 8px;">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--success)" stroke-width="3"><polyline points="20 6 9 17 4 12"></polyline></svg>
+                    <span>External-grade → raw-grade compatibility configurations</span>
+                </li>
+                <li style="margin-bottom: 8px; font-size: 12.5px; color: var(--text-secondary); display: flex; align-items: center; gap: 8px;">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--success)" stroke-width="3"><polyline points="20 6 9 17 4 12"></polyline></svg>
+                    <span>LFA batch and billet-length rule matching</span>
+                </li>
+                <li style="font-size: 12.5px; color: var(--text-secondary); display: flex; align-items: center; gap: 8px;">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--success)" stroke-width="3"><polyline points="20 6 9 17 4 12"></polyline></svg>
+                    <span>Historical section planning workbook exports &amp; logs</span>
+                </li>
+            </ul>
+        </div>
+        
+        <img src="{% static 'casting_plan/dashboard-flow-art.png' %}?v=2.0" alt="Steel Rail Section Flow" style="width: 280px; height: 160px; object-fit: cover; border-radius: var(--radius-md); border: 1px solid var(--border-color);">
+    </div>
+</section>
+
+<!-- Bottom Panels Grid -->
+<section class="grid2">
+    <!-- Key Metrics Card -->
+    <div class="panel">
+        <h2 style="font-size: 12px; font-weight: 800; color: var(--text-secondary); letter-spacing: 0.8px; margin-bottom: 16px;">📊 KEY METRICS</h2>
+        <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px;">
+            <div style="background: var(--bg-card-sub); border: 1px solid var(--border-color); border-radius: var(--radius-md); padding: 12px 14px;">
+                <div style="font-size: 10px; font-weight: 700; color: var(--text-secondary);">Total Demand</div>
+                <div style="font-size: 16px; font-weight: 800; color: var(--text-primary); margin: 4px 0 2px 0;">1,520 MT</div>
+                <div style="font-size: 10px; color: var(--success); font-weight: 700;">↑ +6%</div>
+            </div>
+            <div style="background: var(--bg-card-sub); border: 1px solid var(--border-color); border-radius: var(--radius-md); padding: 12px 14px;">
+                <div style="font-size: 10px; font-weight: 700; color: var(--text-secondary);">Planned Production</div>
+                <div style="font-size: 16px; font-weight: 800; color: var(--text-primary); margin: 4px 0 2px 0;">1,480 MT</div>
+                <div style="font-size: 10px; color: var(--success); font-weight: 700;">↑ +5%</div>
+            </div>
+            <div style="background: var(--bg-card-sub); border: 1px solid var(--border-color); border-radius: var(--radius-md); padding: 12px 14px;">
+                <div style="font-size: 10px; font-weight: 700; color: var(--text-secondary);">Expected Yield</div>
+                <div style="font-size: 16px; font-weight: 800; color: var(--text-primary); margin: 4px 0 2px 0;">96.8%</div>
+                <div style="font-size: 10px; color: var(--success); font-weight: 700;">↑ +2.3%</div>
+            </div>
+            <div style="background: var(--bg-card-sub); border: 1px solid var(--border-color); border-radius: var(--radius-md); padding: 12px 14px;">
+                <div style="font-size: 10px; font-weight: 700; color: var(--text-secondary);">Estimated Cost Saving</div>
+                <div style="font-size: 16px; font-weight: 800; color: var(--text-primary); margin: 4px 0 2px 0;">₹ 12.4 Lakh</div>
+                <div style="font-size: 10px; color: var(--success); font-weight: 700;">↑ +8%</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Next Optimization Layer Card -->
+    <div class="panel">
+        <h2 style="font-size: 12px; font-weight: 800; color: var(--text-secondary); letter-spacing: 0.8px; margin-bottom: 16px;">⚡ NEXT OPTIMIZATION LAYER</h2>
+        <div style="display: flex; gap: 16px; align-items: center; justify-content: space-between;">
+            <ul class="benefit-list" style="list-style: none; padding: 0; flex: 1;">
+                <li style="margin-bottom: 8px; font-size: 12px; color: var(--text-secondary); display: flex; align-items: center; gap: 8px;">
+                    <span style="width: 18px; height: 18px; border-radius: 50%; background: rgba(59, 130, 246, 0.2); color: #3b82f6; display: flex; align-items: center; justify-content: center; font-size: 10px; font-weight: 800; flex-shrink: 0;">1</span>
+                    <span>Cutting-stock / scheduling / batching optimization algorithms</span>
+                </li>
+                <li style="margin-bottom: 8px; font-size: 12px; color: var(--text-secondary); display: flex; align-items: center; gap: 8px;">
+                    <span style="width: 18px; height: 18px; border-radius: 50%; background: rgba(59, 130, 246, 0.2); color: #3b82f6; display: flex; align-items: center; justify-content: center; font-size: 10px; font-weight: 800; flex-shrink: 0;">2</span>
+                    <span>Heat consolidation and sequential transition costs</span>
+                </li>
+                <li style="margin-bottom: 8px; font-size: 12px; color: var(--text-secondary); display: flex; align-items: center; gap: 8px;">
+                    <span style="width: 18px; height: 18px; border-radius: 50%; background: rgba(59, 130, 246, 0.2); color: #3b82f6; display: flex; align-items: center; justify-content: center; font-size: 10px; font-weight: 800; flex-shrink: 0;">3</span>
+                    <span>Actual vs planned yield tracking and closed-loop feedback</span>
+                </li>
+                <li style="font-size: 12px; color: var(--text-secondary); display: flex; align-items: center; gap: 8px;">
+                    <span style="width: 18px; height: 18px; border-radius: 50%; background: rgba(59, 130, 246, 0.2); color: #3b82f6; display: flex; align-items: center; justify-content: center; font-size: 10px; font-weight: 800; flex-shrink: 0;">4</span>
+                    <span>RM costs tracking, saving estimations, and planning dashboard</span>
+                </li>
+            </ul>
+            <img src="{% static 'casting_plan/target-bullseye-art.png' %}?v=2.0" alt="Railway Sunset Tracks" style="width: 170px; height: 110px; object-fit: cover; border-radius: var(--radius-md); border: 1px solid var(--border-color);">
+        </div>
+    </div>
+</section>
+{% endblock %}

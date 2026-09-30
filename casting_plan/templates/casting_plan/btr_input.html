@@ -1,0 +1,323 @@
+{% extends 'casting_plan/base.html' %}
+{% load static %}
+
+{% block page_title %}
+  <span id="pageTitleText">
+    {% if current_step == 3 %}
+      Camp Plan Ready — Authoritative CAMP PLAN FORMAT structure generated
+    {% elif current_step == 2 or upload_info %}
+      Planning Material Selection — Select target Planning Mat from BTR dataset
+    {% else %}
+      BTR Input — Upload BTR report and validate CFD COS sheet
+    {% endif %}
+  </span>
+{% endblock %}
+{% block page_subtitle %}{% endblock %}
+
+{% block content %}
+<!-- Step Tracker Bar (8 Steps) -->
+<div class="step-tracker-bar">
+    <a href="{% url 'btr_input' %}" class="step-item active">
+        <span class="step-num">1</span>
+        <span>BTR Input</span>
+    </a>
+    <span class="step-divider">—</span>
+    <a href="{% url 'btr_rolling_calendar' %}" class="step-item">
+        <span class="step-num">2</span>
+        <span>Upload Rolling Calendar</span>
+    </a>
+    <span class="step-divider">—</span>
+    <a href="{% url 'btr_planning_material' %}" class="step-item">
+        <span class="step-num">3</span>
+        <span>Planning Material</span>
+    </a>
+    <span class="step-divider">—</span>
+    <a href="{% url 'btr_camp_plan' %}" class="step-item">
+        <span class="step-num">4</span>
+        <span>Camp Plan</span>
+    </a>
+    <span class="step-divider">—</span>
+    <a href="{% url 'create_casting_plan' %}" class="step-item">
+        <span class="step-num">5</span>
+        <span>Casting Plan</span>
+    </a>
+    <span class="step-divider">—</span>
+    <a href="{% url 'btr_embossing_plan' %}" class="step-item">
+        <span class="step-num">6</span>
+        <span>Campaign Summary</span>
+    </a>
+    <span class="step-divider">—</span>
+    <a href="{% url 'btr_roll_shop_sequence' %}" class="step-item">
+        <span class="step-num">7</span>
+        <span>Roll Shop Sequence</span>
+    </a>
+    <span class="step-divider">—</span>
+    <a href="{% url 'btr_rolling_plan' %}" class="step-item">
+        <span class="step-num">8</span>
+        <span>Rolling Plan</span>
+    </a>
+</div>
+
+<!-- STEP 1: BTR INPUT -->
+<div id="stepView1" style="{% if active_step and active_step != 1 %}display: none;{% endif %}">
+    <div style="display: flex; justify-content: space-between; align-items: flex-end; margin-bottom: 20px;">
+        <div>
+            <div style="font-size: 11px; letter-spacing: 1.5px; font-weight: 800; color: #3b82f6; text-transform: uppercase; margin-bottom: 4px;">
+                STEP 1 OF 8 — BTR INPUT
+            </div>
+            <h1 style="font-size: 24px; font-weight: 800; color: var(--text-primary); margin-bottom: 4px;">BTR Input</h1>
+            <p style="font-size: 13px; color: var(--text-secondary);">Upload the BTR report and prepare records for Camp Plan generation.</p>
+        </div>
+        <div>
+            <a href="{% url 'btr_rolling_calendar' %}" class="button" style="background: linear-gradient(135deg, #ff6b00 0%, #ff5500 100%); color: #ffffff; padding: 10px 24px; font-size: 13.5px; font-weight: 700; border-radius: 30px; box-shadow: 0 4px 15px rgba(255, 107, 0, 0.35); text-decoration: none; display: inline-flex; align-items: center; gap: 8px;">
+                <span>Proceed to Step 2: Upload Rolling Calendar</span>
+                <span style="font-size: 15px;">→</span>
+            </a>
+        </div>
+    </div>
+
+    <!-- Top Two Cards Row -->
+    <div class="grid2" style="margin-bottom: 22px;">
+        <!-- Left Card: Upload Dropzone -->
+        <div class="panel" style="margin-bottom: 0;">
+            <h2 style="font-size: 12px; font-weight: 800; color: var(--text-secondary); letter-spacing: 0.8px; margin-bottom: 16px;">UPLOAD BTR EXCEL REPORT</h2>
+            <form method="post" action="{% url 'btr_input' %}" enctype="multipart/form-data" id="btrUploadForm">
+                {% csrf_token %}
+                <div class="dropzone-box" onclick="document.getElementById('btrFileInput').click();">
+                    <svg class="dropzone-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                        <polyline points="17 8 12 3 7 8"></polyline>
+                        <line x1="12" y1="3" x2="12" y2="15"></line>
+                    </svg>
+                    <div class="dropzone-title" id="dropzoneLabelText">Choose BTR Excel file</div>
+                    <div class="dropzone-subtitle">Accepted file type: .xlsx (Sheet: Cos / CFD COS)</div>
+                    <button type="button" class="button-secondary" style="padding: 6px 14px; font-size: 12px; margin-top: 4px;">Select Excel File</button>
+                    <input id="btrFileInput" type="file" name="btr_file" accept=".xlsx,.xlsm" required style="display: none;" onchange="updateFileName(this);">
+                </div>
+                <button type="submit" class="button" style="width: 100%; margin-top: 16px;">Upload BTR Report</button>
+            </form>
+        </div>
+
+        <!-- Right Card: Workflow Validation Rules -->
+        <div class="panel" style="margin-bottom: 0;">
+            <h2 style="font-size: 12px; font-weight: 800; color: var(--text-secondary); letter-spacing: 0.8px; margin-bottom: 16px;">WORKFLOW VALIDATION RULES</h2>
+            <ul style="list-style: none; padding: 0;">
+                <li style="display: flex; align-items: flex-start; gap: 10px; margin-bottom: 14px; font-size: 13px; color: var(--text-secondary); line-height: 1.5;">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--success)" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink: 0; margin-top: 2px;"><polyline points="20 6 9 17 4 12"></polyline></svg>
+                    <span><strong>Sheet Verification:</strong> Automatically parses the <code>Cos</code> / <code>CFD COS</code> worksheet.</span>
+                </li>
+                <li style="display: flex; align-items: flex-start; gap: 10px; margin-bottom: 14px; font-size: 13px; color: var(--text-secondary); line-height: 1.5;">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--success)" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink: 0; margin-top: 2px;"><polyline points="20 6 9 17 4 12"></polyline></svg>
+                    <span><strong>Dataset Cleaning:</strong> Automatically removes Bal Bill Qty from memory processing.</span>
+                </li>
+                <li style="display: flex; align-items: flex-start; gap: 10px; margin-bottom: 14px; font-size: 13px; color: var(--text-secondary); line-height: 1.5;">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--success)" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink: 0; margin-top: 2px;"><polyline points="20 6 9 17 4 12"></polyline></svg>
+                    <span><strong>Original File Safety:</strong> Source file is untouched; all operations run in memory.</span>
+                </li>
+                <li style="display: flex; align-items: flex-start; gap: 10px; margin-bottom: 14px; font-size: 13px; color: var(--text-secondary); line-height: 1.5;">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--success)" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink: 0; margin-top: 2px;"><polyline points="20 6 9 17 4 12"></polyline></svg>
+                    <span><strong>Field Validation:</strong> Ensures Planning Mat, Sec Wt, Length, and Bal Roll Qty exist.</span>
+                </li>
+            </ul>
+        </div>
+    </div>
+
+    <!-- Uploaded File Status Card -->
+    <div class="panel">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
+            <h2 style="margin: 0; font-size: 12px; font-weight: 800; color: var(--text-secondary); letter-spacing: 0.8px;">
+                UPLOADED FILE STATUS — {% if metadata or upload_info %}ACTIVE DATASET LOADED{% else %}PENDING UPLOAD{% endif %}
+            </h2>
+            <span class="record-badge {% if metadata or upload_info %}badge-records-green{% else %}record-badge{% endif %}" style="background: var(--badge-gray); color: var(--text-muted);">
+                {% if metadata or upload_info %}ACTIVE DATASET{% else %}NO ACTIVE DATASET{% endif %}
+            </span>
+        </div>
+
+        <div class="status-stats-grid">
+            <!-- Stat 1 -->
+            <div class="status-stat-card">
+                <div class="status-stat-top">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path></svg>
+                    <span class="dot-indicator"></span>
+                </div>
+                <div class="status-stat-val">{% if metadata %}{{ metadata.filename }}{% elif upload_info %}{{ upload_info.original_name }}{% else %}No File Uploaded{% endif %}</div>
+                <div class="status-stat-label">UPLOADED FILENAME</div>
+            </div>
+
+            <!-- Stat 2 -->
+            <div class="status-stat-card">
+                <div class="status-stat-top">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"></rect></svg>
+                    <span class="dot-indicator"></span>
+                </div>
+                <div class="status-stat-val">{% if metadata %}{{ metadata.sheet_name }}{% elif upload_info %}{{ upload_info.sheet_name }}{% else %}-{% endif %}</div>
+                <div class="status-stat-label">SHEET NAME</div>
+            </div>
+
+            <!-- Stat 3 -->
+            <div class="status-stat-card">
+                <div class="status-stat-top">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="8" y1="6" x2="21" y2="6"></line><line x1="8" y1="12" x2="21" y2="12"></line><line x1="8" y1="18" x2="21" y2="18"></line></svg>
+                    <span class="dot-indicator"></span>
+                </div>
+                <div class="status-stat-val">{% if metadata %}{{ metadata.total_records }}{% elif upload_info %}{{ upload_info.row_count }}{% else %}0{% endif %}</div>
+                <div class="status-stat-label">TOTAL INPUT RECORDS</div>
+            </div>
+
+            <!-- Stat 4 -->
+            <div class="status-stat-card">
+                <div class="status-stat-top">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"></rect><rect x="14" y="3" width="7" height="7"></rect></svg>
+                    <span class="dot-indicator"></span>
+                </div>
+                <div class="status-stat-val">{% if metadata %}{{ metadata.total_columns|default:76 }}{% else %}76{% endif %}</div>
+                <div class="status-stat-label">SOURCE COLUMN COUNT</div>
+            </div>
+
+            <!-- Stat 5 -->
+            <div class="status-stat-card">
+                <div class="status-stat-top">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21.5 2v6h-6M21.34 15.57a10 10 0 1 1-.57-8.38l5.67-5.67"></path></svg>
+                    <span class="dot-indicator"></span>
+                </div>
+                <div class="status-stat-val">{% if metadata %}{{ metadata.unique_planning_mats|length }}{% elif upload_info %}{{ upload_info.planning_materials|length }}{% else %}0{% endif %}</div>
+                <div class="status-stat-label">UNIQUE PLANNING MATS</div>
+            </div>
+        </div>
+
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 14px; padding-top: 12px; border-top: 1px solid var(--border-color); font-size: 11px; color: var(--text-secondary);">
+            <div>
+                <span>UPLOAD DATE & TIME: {% if metadata %}{{ metadata.uploaded_at_fmt }}{% else %}{{ today }}{% endif %}</span>
+                <span style="margin: 0 10px;">|</span>
+                <span>FILE SIZE: {% if metadata %}{{ metadata.file_size_mb }}{% else %}-{% endif %}</span>
+                <span style="margin: 0 10px;">|</span>
+                <span>STATUS: {% if metadata or upload_info %}<strong style="color: var(--success);">Active Dataset Loaded</strong>{% else %}Pending Upload / No File Active{% endif %}</span>
+            </div>
+            <div>Upload BTR file above or select from history below</div>
+        </div>
+    </div>
+
+    <!-- BTR Data Preview Accordion Card -->
+    <div class="panel">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">
+            <h2 style="margin: 0; font-size: 12px; font-weight: 800; color: var(--text-secondary); letter-spacing: 0.8px; display: flex; align-items: center; gap: 8px;">
+                <span style="font-size: 11px; font-weight: 900; color: var(--text-muted);">v</span> BTR DATA PREVIEW
+            </h2>
+            <button class="button-secondary" style="padding: 5px 16px; font-size: 11.5px; border-radius: 20px; background: var(--bg-card-sub); border: 1px solid var(--border-color); color: var(--text-primary); font-weight: 600;" onclick="toggleElement('btrPreviewContent')">Toggle Preview</button>
+        </div>
+        
+        <div id="btrPreviewContent">
+            <div class="table-card-wrapper" style="border: 1px solid var(--border-color); border-radius: var(--radius-md); overflow-x: auto; background: var(--bg-card-sub);">
+                <table class="btr-preview-table" style="width: 100%; border-collapse: collapse; min-width: 1000px;">
+                    <thead>
+                        <tr style="background: var(--table-header-bg); border-bottom: 1px solid var(--border-color);">
+                            <th style="padding: 14px 16px; font-size: 11px; font-weight: 800; color: var(--text-secondary); text-transform: uppercase; letter-spacing: 0.8px; text-align: left;">SALES OFFICE</th>
+                            <th style="padding: 14px 16px; font-size: 11px; font-weight: 800; color: var(--text-secondary); text-transform: uppercase; letter-spacing: 0.8px; text-align: center;">SOTY</th>
+                            <th style="padding: 14px 16px; font-size: 11px; font-weight: 800; color: var(--text-secondary); text-transform: uppercase; letter-spacing: 0.8px; text-align: center;">AGE SO</th>
+                            <th style="padding: 14px 16px; font-size: 11px; font-weight: 800; color: var(--text-secondary); text-transform: uppercase; letter-spacing: 0.8px; text-align: center;">AGE FI(2)</th>
+                            <th style="padding: 14px 16px; font-size: 11px; font-weight: 800; color: var(--text-secondary); text-transform: uppercase; letter-spacing: 0.8px; text-align: center;">TYPE OF CUSTOMER</th>
+                            <th style="padding: 14px 16px; font-size: 11px; font-weight: 800; color: var(--text-secondary); text-transform: uppercase; letter-spacing: 0.8px; text-align: center;">MATERIAL GROUP 5</th>
+                            <th style="padding: 14px 16px; font-size: 11px; font-weight: 800; color: var(--text-secondary); text-transform: uppercase; letter-spacing: 0.8px; text-align: center;">SO DATE</th>
+                            <th style="padding: 14px 16px; font-size: 11px; font-weight: 800; color: var(--text-secondary); text-transform: uppercase; letter-spacing: 0.8px; text-align: center;">REQ. DELI. DATE</th>
+                            <th style="padding: 14px 16px; font-size: 11px; font-weight: 800; color: var(--text-secondary); text-transform: uppercase; letter-spacing: 0.8px; text-align: center;">CO</th>
+                            <th style="padding: 14px 16px; font-size: 11px; font-weight: 800; color: var(--text-secondary); text-transform: uppercase; letter-spacing: 0.8px; text-align: center;">REMARKS</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% if preview_records %}
+                            {% for row in preview_records %}
+                            <tr style="border-bottom: 1px solid var(--border-color);">
+                                <td style="padding: 14px 16px; font-weight: 700; color: var(--text-primary); text-align: left;">{{ row.Sales_Office|default:'-' }}</td>
+                                <td style="padding: 14px 16px; font-weight: 700; color: var(--text-primary); text-align: center;">{{ row.SO_Type|default:'-' }}</td>
+                                <td style="padding: 14px 16px; font-weight: 700; color: var(--text-primary); text-align: center;">{{ row.Age_SO|default:'-' }}</td>
+                                <td style="padding: 14px 16px; font-weight: 700; color: var(--text-primary); text-align: center;">{{ row.Age_FI_2|default:'-' }}</td>
+                                <td style="padding: 14px 16px; font-weight: 700; color: var(--text-primary); text-align: center;">{{ row.Type_of_Customer|default:'-' }}</td>
+                                <td style="padding: 14px 16px; font-weight: 700; color: var(--text-primary); text-align: center;">{{ row.Material_group_5|default:'-' }}</td>
+                                <td style="padding: 14px 16px; font-weight: 700; color: var(--text-primary); text-align: center;">{{ row.SO_Date|default:'-' }}</td>
+                                <td style="padding: 14px 16px; font-weight: 700; color: var(--text-primary); text-align: center;">{{ row.Req_Deli_Date|default:'-' }}</td>
+                                <td style="padding: 14px 16px; font-weight: 700; color: var(--text-primary); text-align: center;">{{ row.SO_No|default:'-' }}</td>
+                                <td style="padding: 14px 16px; font-weight: 700; color: var(--text-primary); text-align: center;">{{ row.Remarks|default:'-' }}</td>
+                            </tr>
+                            {% endfor %}
+                        {% else %}
+                            <tr>
+                                <td colspan="10" style="text-align: center; padding: 32px; color: var(--text-muted); font-size: 13px;">
+                                    No active BTR dataset loaded. Upload a BTR report above to view preview records.
+                                </td>
+                            </tr>
+                        {% endif %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- BTR Upload History Card -->
+    <div class="panel">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">
+            <h2 id="historyHeaderTitle" style="margin: 0; font-size: 12px; font-weight: 800; color: var(--text-secondary); letter-spacing: 0.8px;">
+                ∨ BTR UPLOAD HISTORY ({% if btr_uploads %}{{ btr_uploads|length }}{% else %}0{% endif %} REPORTS)
+            </h2>
+            <button class="button-secondary" style="padding: 4px 10px; font-size: 11px;" onclick="toggleElement('historyTableContent')">Toggle History</button>
+        </div>
+        
+        <div id="historyTableContent" style="overflow-x: auto;">
+            <table>
+                <thead>
+                    <tr>
+                        <th>FILENAME</th>
+                        <th>SHEET NAME</th>
+                        <th>UPLOAD DATE & TIME</th>
+                        <th>TOTAL RECORDS</th>
+                        <th>UNIQUE MATS</th>
+                        <th>STATUS</th>
+                        <th style="text-align: right;">ACTION</th>
+                    </tr>
+                </thead>
+                <tbody id="historyTableBody">
+                    {% if btr_uploads %}
+                        {% for u in btr_uploads %}
+                            <tr {% if u.upload_id == active_upload_id %}style="background: rgba(59, 130, 246, 0.08);"{% endif %}>
+                                <td><strong style="color: var(--text-primary);">{{ u.filename }}</strong></td>
+                                <td>{{ u.sheet_name|default:"CFD COS" }}</td>
+                                <td>{{ u.uploaded_at_fmt }}</td>
+                                <td>{{ u.total_records }}</td>
+                                <td>{{ u.unique_planning_mats|length }}</td>
+                                <td><span class="record-badge badge-records-green">✓ VALIDATED</span></td>
+                                <td style="text-align: right;">
+                                    <a href="{% url 'select_btr_upload' u.upload_id %}" class="button-secondary" style="padding: 4px 10px; font-size: 11px; text-decoration: none; display: inline-block;">View</a>
+                                    <form method="post" action="{% url 'delete_btr_upload' u.upload_id %}" style="display: inline;" onsubmit="return confirm('Are you sure you want to delete this report from history?');">
+                                        {% csrf_token %}
+                                        <button class="button-secondary" style="padding: 4px 10px; font-size: 11px; color: var(--danger); border-color: rgba(239, 68, 68, 0.3);" type="submit">Delete</button>
+                                    </form>
+                                </td>
+                            </tr>
+                        {% endfor %}
+                    {% else %}
+                        <tr class="empty-history-tr">
+                            <td colspan="7" style="text-align: center; padding: 32px; color: var(--text-muted); font-size: 13px;">
+                                No BTR reports in upload history. Upload a BTR report above to get started.
+                            </td>
+                        </tr>
+                    {% endif %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<script>
+    function updateFileName(input) {
+        if (input.files && input.files[0]) {
+            document.getElementById('dropzoneLabelText').textContent = input.files[0].name;
+        }
+    }
+
+    function toggleElement(id) {
+        const el = document.getElementById(id);
+        if (el) {
+            el.style.display = el.style.display === 'none' ? 'block' : 'none';
+        }
+    }
+</script>
+{% endblock %}
